@@ -1,3 +1,10 @@
+//
+//  Composition.swift
+//
+//
+//  Created by Илья Шаповалов on 16.08.2023.
+//
+
 precedencegroup CompositionPrecedence {
     associativity: left
 }

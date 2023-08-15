@@ -5,8 +5,6 @@
 //  Created by Илья Шаповалов on 16.08.2023.
 //
 
-import Foundation
-
 public struct Functor<F1, F2> {
     private let f: (F1) -> F2
     
@@ -30,7 +28,7 @@ public struct Functor<F1, F2> {
         var result: F2?
         
         while !condition() && tries < maxTries {
-            result = f(args)
+            result = self.run(args)
             tries += 1
         }
         
