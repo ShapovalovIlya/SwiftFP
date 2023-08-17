@@ -5,20 +5,18 @@
 //  Created by Илья Шаповалов on 16.08.2023.
 //
 
-public typealias TransformValue<T> = (T) -> (T)
-
-public func compose<T>(
-    _ a: @escaping TransformValue<T>,
-    _ b: @escaping TransformValue<T>,
-    _ c: @escaping TransformValue<T>
-) -> TransformValue<T> {
-    { a(b(c($0))) }
+public func compose<A,B,C>(
+    _ f: @escaping (A) -> B,
+    _ g: @escaping (B) -> C
+) -> (A) -> C {
+    { g(f($0)) }
 }
 
-public func pipe<T>(
-    _ a: @escaping TransformValue<T>,
-    _ b: @escaping TransformValue<T>,
-    _ c: @escaping TransformValue<T>
-) -> TransformValue<T> {
-    { c(b(a($0))) }
+public func compose<A,B,C,D>(
+    _ f: @escaping (A) -> B,
+    _ g: @escaping (B) -> C,
+    _ h: @escaping (C) -> D
+) -> (A) -> D {
+    { h(g(f($0))) }
 }
+
