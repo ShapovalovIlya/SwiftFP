@@ -5,6 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftFP",
+    platforms: [
+        .iOS(.v12),
+        .macOS(.v10_13)
+    ],
     products: [
         .library(name: "SwiftFP", targets: ["SwiftFP"]),
     ],
