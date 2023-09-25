@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Monad structure that performs functions `map`, `flatMap` and `apply` to wrapped value.
 public struct Box<T> {
     public let value: T
     
