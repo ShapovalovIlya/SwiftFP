@@ -22,6 +22,10 @@ public struct Box<T> {
         try transform(self.value)
     }
     
+    public func flatMap<U>(_ transform: (T) throws -> U) rethrows -> U {
+        try transform(self.value)
+    }
+    
     public func apply<U>(_ transform: Box<(T) -> U>) -> Box<U> {
         Box<U>(transform.value(self.value))
     }
