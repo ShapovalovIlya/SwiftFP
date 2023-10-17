@@ -11,9 +11,16 @@ let package = Package(
     ],
     products: [
         .library(name: "SwiftFP", targets: ["SwiftFP"]),
+    ], 
+    dependencies: [
+        .package(url: "https://github.com/ShapovalovIlya/PropertyWrappers.git", branch: "main"),
     ],
     targets: [
-        .target(name: "SwiftFP"),
+        .target(
+            name: "SwiftFP",
+            dependencies: [
+                .product(name: "PropertyWrappers", package: "PropertyWrappers"),
+            ]),
         .testTarget(
             name: "SwiftFPTests",
             dependencies: ["SwiftFP"]),
