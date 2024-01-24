@@ -12,18 +12,21 @@ public struct Functor<F1, F2> {
         self.f = f
     }
     
-    @discardableResult public func run(_ args: F1) -> F2 {
+    @discardableResult 
+    public func run(_ args: F1) -> F2 {
         f(args)
     }
     
-    @discardableResult public func run(_ args: F1, times: Int) -> F2 {
+    @discardableResult 
+    public func run(_ args: F1, times: Int) -> F2 {
         for _ in 1...times {
             self.run(args)
         }
         return f(args)
     }
     
-    @discardableResult public func retry(_ args: F1, maxTries: Int, condition: () -> Bool) -> F2 {
+    @discardableResult 
+    public func retry(_ args: F1, maxTries: Int, condition: () -> Bool) -> F2 {
         var tries = 0
         var result: F2?
         
