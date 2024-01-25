@@ -9,70 +9,70 @@ import Foundation
 
 /// A value that represents either a success or a failure, including an associated value in each case.
 /// Perform `map`, `flatMap` either `mapFailure`, `flatMapFailure`.
-public enum Either<Success, Failure> {
-    case success(Success)
-    case failure(Failure)
+public enum Either<Left, Right> {
+    case left(Left)
+    case right(Right)
     
-    /// Returns a new result, mapping any success value using the given transformation.
-    /// - Parameter transform: A closure that takes the success value of this instance.
-    /// - Returns: A `Either` instance with the result of evaluating `transform` as the new success value if this instance represents a success.
+    /// Returns a new result, mapping any `left` value using the given transformation.
+    /// - Parameter transform: A closure that takes the `left` value of this instance.
+    /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
     @inlinable
-    public func map<NewSuccess>(
-        _ transform: (Success) throws -> NewSuccess
-    ) rethrows -> Either<NewSuccess, Failure> {
+    public func map<NewLeft>(
+        _ transform: (Left) throws -> NewLeft
+    ) rethrows -> Either<NewLeft, Right> {
         switch self {
-        case .success(let success):
-            return try .success(transform(success))
+        case .left(let left):
+            return try .left(transform(left))
             
-        case .failure(let failure):
-            return .failure(failure)
+        case .right(let right):
+            return .right(right)
         }
     }
     
-    /// Returns a new result, mapping any failure value using the given transformation.
-    /// - Parameter transform: A closure that takes the failure value of the instance.
-    /// - Returns: A `Either` instance with the result of evaluating `transform` as the new failure value if this instance represents a failure.
+    /// Returns a new result, mapping any `right` value using the given transformation.
+    /// - Parameter transform: A closure that takes the `right` value of the instance.
+    /// - Returns: A `Either` instance with the result of evaluating `transform` as the new right value if this instance represents a right branch.
     @inlinable
-    public func mapFailure<NewFailure>(
-        _ transform: (Failure) throws -> NewFailure
-    ) rethrows -> Either<Success, NewFailure> {
+    public func mapRight<NewRight>(
+        _ transform: (Right) throws -> NewRight
+    ) rethrows -> Either<Left, NewRight> {
         switch self {
-        case .success(let success): 
-            return .success(success)
-        case .failure(let failure):
-            return try .failure(transform(failure))
+        case .left(let left):
+            return .left(left)
+        case .right(let right):
+            return try .right(transform(right))
         }
     }
     
-    /// Returns a new result, mapping any success value using the given transformation and unwrapping the produced result.
-    /// - Parameter transform: A closure that takes the success value of the instance.
-    /// - Returns: A `Either` instance, either from the closure or the previous .failure.
+    /// Returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
+    /// - Parameter transform: A closure that takes the `left` value of the instance.
+    /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
     @inlinable
-    public func flatMap<NewSuccess>(
-        _ transform: (Success) throws -> Either<NewSuccess, Failure>
-    ) rethrows -> Either<NewSuccess, Failure> {
+    public func flatMap<NewLeft>(
+        _ transform: (Left) throws -> Either<NewLeft, Right>
+    ) rethrows -> Either<NewLeft, Right> {
         switch self {
-        case .success(let success):
-            return try transform(success)
+        case .left(let left):
+            return try transform(left)
             
-        case .failure(let failure):
-            return .failure(failure)
+        case .right(let right):
+            return .right(right)
         }
     }
     
-    /// Returns a new result, mapping any failure value using the given transformation and unwrapping the produced result.
-    /// - Parameter transform: A closure that takes the failure value of the instance.
-    /// - Returns: A `Either` instance, either from the closure or the previous .success.
+    /// Returns a new result, mapping any `right` value using the given transformation and unwrapping the produced result.
+    /// - Parameter transform: A closure that takes the `right` value of the instance.
+    /// - Returns: A `Either` instance, either from the closure or the previous `.left`.
     @inlinable
-    public func flatMapFailure<NewFailure>(
-        _ transform: (Failure) throws -> Either<Success, NewFailure>
-    ) rethrows -> Either<Success, NewFailure> {
+    public func flatMapRight<NewRight>(
+        _ transform: (Right) throws -> Either<Left, NewRight>
+    ) rethrows -> Either<Left, NewRight> {
         switch self {
-        case .success(let success):
-            return .success(success)
+        case .left(let left):
+            return .left(left)
             
-        case .failure(let failure):
-            return try transform(failure)
+        case .right(let right):
+            return try transform(right)
         }
     }
     
@@ -81,7 +81,7 @@ public enum Either<Success, Failure> {
     /// - Returns: A new type instance, from the closure.
     @inlinable
     public func flatMap<T>(
-        _ transform: (Either<Success, Failure>) throws -> T
+        _ transform: (Either<Left, Right>) throws -> T
     ) rethrows -> T {
         try transform(self)
     }
