@@ -13,6 +13,7 @@ public enum Either<Left, Right> {
     case left(Left)
     case right(Right)
     
+    //MARK: - map(_:)
     /// Returns a new result, mapping any `left` value using the given transformation.
     /// - Parameter transform: A closure that takes the `left` value of this instance.
     /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
@@ -44,6 +45,7 @@ public enum Either<Left, Right> {
         }
     }
     
+    //MARK: - flatMap(_:)
     /// Returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
     /// - Parameter transform: A closure that takes the `left` value of the instance.
     /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
@@ -84,5 +86,32 @@ public enum Either<Left, Right> {
         _ transform: (Either<Left, Right>) throws -> T
     ) rethrows -> T {
         try transform(self)
+    }
+    
+    //MARK: - apply(_:)
+    @inlinable
+    public func apply<NewLeft>(
+        _ other: Either<(Left) -> NewLeft, Right>
+    ) -> Either<NewLeft, Right> {
+        switch other {
+        case .left(let transform):
+            return self.map(transform)
+            
+        case .right(let right):
+            return .right(right)
+        }
+    }
+    
+    @inlinable
+    public func applyRight<NewRight>(
+        _ other: Either<Left, (Right) -> NewRight>
+    ) -> Either<Left, NewRight> {
+        switch other {
+        case .left(let left):
+            return .left(left)
+            
+        case .right(let transform):
+            return self.mapRight(transform)
+        }
     }
 }
