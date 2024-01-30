@@ -27,11 +27,6 @@ public struct Box<T> {
     }
     
     @inlinable
-    public func flatMap<U>(_ transform: (T) throws -> U) rethrows -> U {
-        try transform(self.value)
-    }
-    
-    @inlinable
     public func apply<U>(_ transform: Box<(T) -> U>) -> Box<U> {
         Box<U>(transform.value(self.value))
     }

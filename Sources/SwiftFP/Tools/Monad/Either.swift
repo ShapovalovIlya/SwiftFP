@@ -7,11 +7,16 @@
 
 import Foundation
 
-/// A value that represents either a success or a failure, including an associated value in each case.
+/// A value that represents branching, including an associated value in each case.
 /// Perform `map`, `flatMap` either `mapFailure`, `flatMapFailure`.
 public enum Either<Left, Right> {
     case left(Left)
     case right(Right)
+    
+    @inlinable
+    public init(branching block: () -> Either) {
+        self = block()
+    }
     
     //MARK: - map(_:)
     /// Returns a new result, mapping any `left` value using the given transformation.
