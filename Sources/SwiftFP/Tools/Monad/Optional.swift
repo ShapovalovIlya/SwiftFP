@@ -9,6 +9,9 @@ import Foundation
 
 public extension Optional {
     @inlinable
+    init(_ block: () -> Optional) { self = block() }
+    
+    @inlinable
     func apply<NewWrapped>(
         _ other: Optional<(Wrapped) -> NewWrapped>
     ) -> Optional<NewWrapped> {
