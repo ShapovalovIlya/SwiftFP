@@ -21,13 +21,17 @@ public extension Optional {
             return self.map(transform)
         }
     }
-        
+       
+    
+    /// Merge two optional values.
+    /// - Parameter other: optional value to combine with
+    /// - Returns: `Optional tuple` containing two upstream values or `nil` if any of them is `nil`
     @inlinable
-    func merge<Other>(_ other: Other?) -> Optional<(Wrapped, Other)> {
+    func merge<T>(_ other: T?) -> Optional<(Wrapped, T)> {
         guard let self, let other else {
             return nil
         }
-        return Optional<(Wrapped, Other)>((self, other))
+        return Optional<(Wrapped, T)>((self, other))
     }
 
 }
