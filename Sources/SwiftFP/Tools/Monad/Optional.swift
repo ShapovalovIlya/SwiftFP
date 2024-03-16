@@ -8,8 +8,6 @@
 import Foundation
 
 public extension Optional {
-    @inlinable
-    init(_ block: () -> Optional) { self = block() }
     
     @inlinable
     func apply<NewWrapped>(
@@ -23,4 +21,13 @@ public extension Optional {
             return self.map(transform)
         }
     }
+        
+    @inlinable
+    func merge<Other>(_ other: Other?) -> Optional<(Wrapped, Other)> {
+        guard let self, let other else {
+            return nil
+        }
+        return Optional<(Wrapped, Other)>((self, other))
+    }
+
 }
