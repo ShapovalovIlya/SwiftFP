@@ -28,10 +28,22 @@ public extension Optional {
     /// - Returns: `Optional tuple` containing two upstream values or `nil` if any of them is `nil`
     @inlinable
     func merge<T>(_ other: T?) -> Optional<(Wrapped, T)> {
-        guard let self, let other else {
-            return nil
+        flatMap { wrapped in
+            other.map { (wrapped, $0) }
         }
-        return Optional<(Wrapped, T)>((self, other))
+    }
+    
+    @inlinable
+    func asyncMap<T>(
+        _ transform: (Wrapped) async throws -> T
+    ) async rethrows -> T? {
+        switch self {
+        case .none:
+            return .none
+        case .some(let wrapped):
+            let transformed = try await transform(wrapped)
+            return .some(transformed)
+        }
     }
 
 }
