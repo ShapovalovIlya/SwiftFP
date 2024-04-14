@@ -13,16 +13,11 @@ public extension Optional {
     func apply<NewWrapped>(
         _ other: Optional<(Wrapped) -> NewWrapped>
     ) -> Optional<NewWrapped> {
-        switch other {
-        case .none:
-            return .none
-
-        case .some(let transform):
-            return self.map(transform)
+        flatMap { wrapped in
+            other.map { $0(wrapped) }
         }
     }
        
-    
     /// Merge two optional values.
     /// - Parameter other: optional value to combine with
     /// - Returns: `Optional tuple` containing two upstream values or `nil` if any of them is `nil`
