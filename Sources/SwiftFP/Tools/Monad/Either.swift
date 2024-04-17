@@ -104,6 +104,30 @@ public enum Either<Left, Right> {
             self.mapRight(transform)
         }
     }
+    
+    //MARK: - asyncFlatMap(_:)
+    @inlinable
+    public func asyncFlatMap<AsyncLeft>(
+        _ transform: (Left) async throws -> Either<AsyncLeft, Right>
+    ) async rethrows -> Either<AsyncLeft, Right> {
+        switch self {
+        case .left(let left):
+            return try await transform(left)
+            
+        case .right(let right):
+            return .right(right)
+        }
+    }
+    
+    //MARK: - asyncMap(_:)
+    @inlinable
+    public func asyncMap<AsyncLeft>(
+        _ transform: (Left) async throws -> AsyncLeft
+    ) async rethrows -> Either<AsyncLeft, Right> {
+        try await asyncFlatMap { left in
+            return try await .left(transform(left))
+        }
+    }
 }
 
 extension Either: Equatable where Left: Equatable, Right: Equatable {}
