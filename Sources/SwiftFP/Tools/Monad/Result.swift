@@ -62,6 +62,13 @@ public extension Result where Failure == Error {
             self = .failure(error)
         }
     }
+    
+    @inlinable
+    func asyncMap<T>(_ transform: (Success) async throws -> T) async -> Result<T, Failure> {
+        await asyncFlatMap { success in
+            await Result<T, Failure> { try await transform(success) }
+        }
+    }
 }
 
 public extension Result where Success == Data {
