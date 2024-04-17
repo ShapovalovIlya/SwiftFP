@@ -130,4 +130,13 @@ public enum Either<Left, Right> {
     }
 }
 
+extension Either where Left == Right {
+    public var unwrap: Left {
+        switch self {
+        case .left(let left): return left
+        case .right(let right): return right
+        }
+    }
+}
+
 extension Either: Equatable where Left: Equatable, Right: Equatable {}
