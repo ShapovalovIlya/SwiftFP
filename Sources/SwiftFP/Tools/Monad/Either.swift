@@ -26,12 +26,8 @@ public enum Either<Left, Right> {
     public func map<NewLeft>(
         _ transform: (Left) throws -> NewLeft
     ) rethrows -> Either<NewLeft, Right> {
-        switch self {
-        case .left(let left):
-            return try .left(transform(left))
-            
-        case .right(let right):
-            return .right(right)
+        try flatMap {
+            try .left(transform($0))
         }
     }
     
@@ -42,11 +38,8 @@ public enum Either<Left, Right> {
     public func mapRight<NewRight>(
         _ transform: (Right) throws -> NewRight
     ) rethrows -> Either<Left, NewRight> {
-        switch self {
-        case .left(let left):
-            return .left(left)
-        case .right(let right):
-            return try .right(transform(right))
+        try flatMapRight {
+            try .right(transform($0))
         }
     }
     
@@ -98,12 +91,8 @@ public enum Either<Left, Right> {
     public func apply<NewLeft>(
         _ other: Either<(Left) -> NewLeft, Right>
     ) -> Either<NewLeft, Right> {
-        switch other {
-        case .left(let transform):
-            return self.map(transform)
-            
-        case .right(let right):
-            return .right(right)
+        other.flatMap { transform in
+            self.map(transform)
         }
     }
     
@@ -111,12 +100,10 @@ public enum Either<Left, Right> {
     public func applyRight<NewRight>(
         _ other: Either<Left, (Right) -> NewRight>
     ) -> Either<Left, NewRight> {
-        switch other {
-        case .left(let left):
-            return .left(left)
-            
-        case .right(let transform):
-            return self.mapRight(transform)
+        other.flatMapRight { transform in
+            self.mapRight(transform)
         }
     }
 }
+
+extension Either: Equatable where Left: Equatable, Right: Equatable {}

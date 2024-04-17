@@ -13,8 +13,8 @@ public extension Optional {
     func apply<NewWrapped>(
         _ other: Optional<(Wrapped) -> NewWrapped>
     ) -> Optional<NewWrapped> {
-        flatMap { wrapped in
-            other.map { $0(wrapped) }
+        other.flatMap { transform in
+            self.map(transform)
         }
     }
        

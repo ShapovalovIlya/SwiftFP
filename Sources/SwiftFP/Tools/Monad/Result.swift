@@ -36,8 +36,8 @@ public extension Result {
     func apply<NewSuccess>(
         _ other: Result<(Success) -> NewSuccess, Failure>
     ) -> Result<NewSuccess, Failure> {
-        flatMap { success in
-            other.map { $0(success) }
+        other.flatMap { transform in
+            self.map(transform)
         }
     }
     
@@ -70,7 +70,7 @@ public extension Result where Success == Data {
         switch self {
         case .success(let success):
             return Result<T, Error> { try decoder.decode(type.self, from: success) }
-            
+
         case .failure(let failure):
             return .failure(failure)
         }
