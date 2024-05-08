@@ -8,7 +8,7 @@
 import Foundation
 
 /// A value that represents branching, including an associated value in each case.
-/// Perform `map`, `flatMap` either `mapFailure`, `flatMapFailure`.
+/// Perform `map`, `flatMap` either `mapRight`, `flatMapRight`.
 public enum Either<Left, Right> {
     case left(Left)
     case right(Right)
@@ -19,6 +19,7 @@ public enum Either<Left, Right> {
     }
     
     //MARK: - map(_:)
+    
     /// Returns a new result, mapping any `left` value using the given transformation.
     /// - Parameter transform: A closure that takes the `left` value of this instance.
     /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
@@ -28,6 +29,18 @@ public enum Either<Left, Right> {
     ) rethrows -> Either<NewLeft, Right> {
         try flatMap {
             try .left(transform($0))
+        }
+    }
+    
+    /// Asynchronously returns a new result, mapping any `left` value using the given transformation.
+    /// - Parameter transform: A closure that takes the `left` value of this instance.
+    /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
+    @inlinable
+    public func asyncMap<AsyncLeft>(
+        _ transform: (Left) async throws -> AsyncLeft
+    ) async rethrows -> Either<AsyncLeft, Right> {
+        try await asyncFlatMap { left in
+            try await .left(transform(left))
         }
     }
     
@@ -44,7 +57,8 @@ public enum Either<Left, Right> {
     }
     
     //MARK: - flatMap(_:)
-    /// Returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
+    
+    /// Asynchronously returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
     /// - Parameter transform: A closure that takes the `left` value of the instance.
     /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
     @inlinable
@@ -54,6 +68,22 @@ public enum Either<Left, Right> {
         switch self {
         case .left(let left):
             return try transform(left)
+            
+        case .right(let right):
+            return .right(right)
+        }
+    }
+    
+    /// Returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
+    /// - Parameter transform: A closure that takes the `left` value of the instance.
+    /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
+    @inlinable
+    public func asyncFlatMap<AsyncLeft>(
+        _ transform: (Left) async throws -> Either<AsyncLeft, Right>
+    ) async rethrows -> Either<AsyncLeft, Right> {
+        switch self {
+        case .left(let left):
+            return try await transform(left)
             
         case .right(let right):
             return .right(right)
@@ -87,6 +117,7 @@ public enum Either<Left, Right> {
     }
     
     //MARK: - apply(_:)
+    
     @inlinable
     public func apply<NewLeft>(
         _ other: Either<(Left) -> NewLeft, Right>
@@ -105,32 +136,11 @@ public enum Either<Left, Right> {
         }
     }
     
-    //MARK: - asyncFlatMap(_:)
-    @inlinable
-    public func asyncFlatMap<AsyncLeft>(
-        _ transform: (Left) async throws -> Either<AsyncLeft, Right>
-    ) async rethrows -> Either<AsyncLeft, Right> {
-        switch self {
-        case .left(let left):
-            return try await transform(left)
-            
-        case .right(let right):
-            return .right(right)
-        }
-    }
-    
-    //MARK: - asyncMap(_:)
-    @inlinable
-    public func asyncMap<AsyncLeft>(
-        _ transform: (Left) async throws -> AsyncLeft
-    ) async rethrows -> Either<AsyncLeft, Right> {
-        try await asyncFlatMap { left in
-            return try await .left(transform(left))
-        }
-    }
 }
 
 extension Either where Left == Right {
+    
+    /// Return wrapped value if both branches contains same types.
     public var unwrap: Left {
         switch self {
         case .left(let left): return left

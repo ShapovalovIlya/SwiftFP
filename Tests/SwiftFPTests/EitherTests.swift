@@ -121,7 +121,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(1))
     }
     
-    func test_applyApplicativeWithRightBranchReturnApplicativeRightBranch() {
+    func test_applyApplicative_WithRightBranch_ReturnApplicativeRightBranch() {
         let descriptor = Either<(Int) -> String, Int>
             .right(1)
         let sut = Either<Int, Int>
@@ -141,7 +141,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(1.description))
     }
     
-    func test_applyRightApplicativeWithLeftBranchReturnApplicativeLeftBranch() {
+    func test_applyRight_ApplicativeWithLeftBranch_ReturnApplicativeLeftBranch() {
         let descriptor = Either<Int, (Int) -> String>
             .left(1)
         let sut = Either<Int, Int>
