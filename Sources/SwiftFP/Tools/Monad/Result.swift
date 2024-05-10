@@ -32,7 +32,7 @@ public extension Result where Failure == Error {
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
     @discardableResult
-    func flatMap<NewSuccess>(
+    func asyncFlatMap<NewSuccess>(
         _ asyncTransform: (Success) async -> Result<NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         switch self {
@@ -52,10 +52,10 @@ public extension Result where Failure == Error {
     /// if this instance represents a success.
     @inlinable
     @discardableResult
-    func map<NewSuccess>(
+    func asyncMap<NewSuccess>(
         _ asyncTransform: (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
-        await flatMap { success in
+        await asyncFlatMap { success in
             await .success(asyncTransform(success))
         }
     }
@@ -78,10 +78,10 @@ public extension Result where Failure == Error {
     /// - Returns: A `Result` instance with the result of evaluating `transformation` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func tryMap<NewSuccess>(
+    func asyncTryMap<NewSuccess>(
         _ transform: (Success) async throws -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
-        await flatMap { success in
+        await asyncFlatMap { success in
             await Result<NewSuccess, Failure> { try await transform(success) }
         }
     }
@@ -108,11 +108,11 @@ public extension Result where Failure == Error {
     /// If any of given `Result` instances are failure, then produced `Result` will be failure.
     @inlinable
     @discardableResult
-    func apply<NewSuccess>(
+    func asyncApply<NewSuccess>(
         _ functor: Result<(Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
-        await functor.flatMap { transform in
-            await self.map(transform)
+        await functor.asyncFlatMap { transform in
+            await self.asyncMap(transform)
         }
     }
     

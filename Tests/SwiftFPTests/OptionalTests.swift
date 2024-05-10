@@ -37,7 +37,7 @@ final class OptionalTests: XCTestCase {
     func test_someValue_asyncApply_someFunctor() async {
         let functor = Optional(asyncAddOne)
         let sut = await Optional(1)
-            .apply(functor)
+            .asyncApply(functor)
         
         XCTAssertEqual(sut, 2)
     }
@@ -45,7 +45,7 @@ final class OptionalTests: XCTestCase {
     func test_someValue_asyncApply_nilFunctor() async {
         let functor = Optional<(Int) async -> Int>.none
         let sut = await Optional(1)
-            .apply(functor)
+            .asyncApply(functor)
         
         XCTAssertNil(sut)
     }
@@ -53,7 +53,7 @@ final class OptionalTests: XCTestCase {
     func test_nilValue_asyncApply_someFunctor() async {
         let functor = Optional(asyncAddOne)
         let sut = await Optional<Int>.none
-            .apply(functor)
+            .asyncApply(functor)
         
         XCTAssertNil(sut)
     }
@@ -61,7 +61,7 @@ final class OptionalTests: XCTestCase {
     //MARK: - flatMap(_:)
     func test_someValue_asyncFlatMap() async {
         let sut = await Optional(1)
-            .flatMap(asyncAddOneOpt(_:))
+            .asyncFlatMap(asyncAddOneOpt(_:))
         
         XCTAssertEqual(sut, 2)
     }
@@ -69,7 +69,7 @@ final class OptionalTests: XCTestCase {
     func test_nilValue_asyncFlatMap() async {
         let sut = await Optional<Int>
             .none
-            .flatMap(asyncAddOneOpt(_:))
+            .asyncFlatMap(asyncAddOneOpt(_:))
         
         XCTAssertNil(sut)
     }
@@ -77,7 +77,7 @@ final class OptionalTests: XCTestCase {
     //MARK: - map(_:)
     func test_someValue_asyncMap() async {
         let sut = await Optional(1)
-            .map(asyncAddOne(_:))
+            .asyncMap(asyncAddOne(_:))
         
         XCTAssertEqual(sut, 2)
     }
