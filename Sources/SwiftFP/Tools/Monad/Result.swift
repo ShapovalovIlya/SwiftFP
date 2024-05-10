@@ -117,8 +117,13 @@ public extension Result where Failure == Error {
     }
     
     //MARK: - zip(_:)
+    
+    /// Zip two `Result` values
+    /// - Parameter other: `Result` object to zip with
+    /// - Returns: `Result` containing two upstream values in `tuple` or `failure`,
+    /// if any of upstream results is `failure`.
     @inlinable
-    func merge<T>(_ other: Result<T, Failure>) -> Result<(Success, T), Failure> {
+    func zip<Other>(_ other: Result<Other, Failure>) -> Result<(Success, Other), Failure> {
         flatMap { success in
             other.map { (success, $0) }
         }
@@ -126,15 +131,11 @@ public extension Result where Failure == Error {
     
 }
 
-public extension Result where Success == Data {
+public extension Result where Success == Data, Failure == Error {
     @inlinable
-    func decode<T: Decodable>(_ type: T.Type, decoder: JSONDecoder) -> Result<T, Error> {
-        switch self {
-        case .success(let success):
-            return Result<T, Error> { try decoder.decode(type.self, from: success) }
-
-        case .failure(let failure):
-            return .failure(failure)
+    func decode<T: Decodable>(_ type: T.Type, decoder: JSONDecoder) -> Result<T, Failure> {
+        flatMap { success in
+            Result<T, Failure> { try decoder.decode(type.self, from: success) }
         }
     }
 }

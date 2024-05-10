@@ -152,6 +152,22 @@ final class ResultTests: XCTestCase {
             XCTAssertTrue(failure is TestFail)
         }
     }
+    
+    //MARK: - zip(_:)
+    func test_zip() {
+        let other = Sut.success(1)
+        let sut = Sut.success(1)
+            .zip(other)
+        
+        switch sut {
+        case .success(let success):
+            XCTAssertEqual(success.0, 1)
+            XCTAssertEqual(success.1, 1)
+            
+        case .failure: XCTFail()
+        }
+        
+    }
 }
 
 //MARK: - Helpers
