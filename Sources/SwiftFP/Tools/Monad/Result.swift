@@ -9,6 +9,8 @@ import Foundation
  
 public extension Result where Failure == Error {
     
+    //MARK: - init(_:)
+    
     /// Asynchronously Creates a new result by evaluating a asynchronous throwing closure,
     /// capturing the returned value as a success, or any thrown error as a failure.
     /// - Parameter body: A asynchronous throwing closure to evaluate.
@@ -22,14 +24,17 @@ public extension Result where Failure == Error {
         }
     }
     
-    /// Returns a new result, asynchronous mapping any success value using the given `transformation` 
+    //MARK: - flatMap(_:)
+    
+    /// Returns a new result, asynchronous mapping any success value using the given `transformation`
     /// and unwrapping the produced result.
     /// - Parameter transform: A asynchronous closure that takes the success value of the instance.
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
-    func flatMap<T>(
-        _ asyncTransform: (Success) async -> Result<T, Failure>
-    ) async -> Result<T, Failure> {
+    @discardableResult
+    func flatMap<NewSuccess>(
+        _ asyncTransform: (Success) async -> Result<NewSuccess, Failure>
+    ) async -> Result<NewSuccess, Failure> {
         switch self {
         case .success(let success):
             return await asyncTransform(success)
@@ -39,12 +44,17 @@ public extension Result where Failure == Error {
         }
     }
     
+    //MARK: - map(_:)
+    
     /// Returns a new result, mapping any success value using the given asynchronous transformation.
     /// - Parameter asyncTransform: A asynchronous closure that takes the success value of this instance.
     /// - Returns: A Result instance with the result of evaluating `asyncTransform` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func map<T>(_ asyncTransform: (Success) async -> T) async -> Result<T, Failure> {
+    @discardableResult
+    func map<NewSuccess>(
+        _ asyncTransform: (Success) async -> NewSuccess
+    ) async -> Result<NewSuccess, Failure> {
         await flatMap { success in
             await .success(asyncTransform(success))
         }
@@ -55,29 +65,44 @@ public extension Result where Failure == Error {
     /// - Returns: A Result instance with the result of evaluating `transformation` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func tryMap<T>(_ transform: (Success) throws -> T) -> Result<T, Failure> {
+    func tryMap<NewSuccess>(
+        _ transform: (Success) throws -> NewSuccess
+    ) -> Result<NewSuccess, Failure> {
         flatMap { success in
-            Result<T, Failure> { try transform(success) }
+            Result<NewSuccess, Failure> { try transform(success) }
         }
     }
     
+    /// Returns a new result, mapping any success value using the given asynchronous throwing transformation.
+    /// - Parameter transform: A asynchronous throwing closure that takes the success value of this instance.
+    /// - Returns: A `Result` instance with the result of evaluating `transformation` as the new success value
+    /// if this instance represents a success.
     @inlinable
-    func tryMap<T>(_ transform: (Success) async throws -> T) async -> Result<T, Failure> {
+    func tryMap<NewSuccess>(
+        _ transform: (Success) async throws -> NewSuccess
+    ) async -> Result<NewSuccess, Failure> {
         await flatMap { success in
-            await Result<T, Failure> { try await transform(success) }
+            await Result<NewSuccess, Failure> { try await transform(success) }
         }
     }
     
+    //MARK: - apply(_:)
+    
+    /// Returns a new result, apply `Result` functor to  success value.
+    /// - Parameter functor: A `Result` functor that takes success value of this instance.
+    /// - Returns: A `Result` instance with the result of evaluating stored function as the new success value.
+    /// If any of given `Result` instances are failure, then produced `Result` will be failure.
     @inlinable
     @discardableResult
     func apply<NewSuccess>(
-        _ other: Result<(Success) -> NewSuccess, Failure>
+        _ functor: Result<(Success) -> NewSuccess, Failure>
     ) -> Result<NewSuccess, Failure> {
-        other.flatMap { transform in
+        functor.flatMap { transform in
             self.map(transform)
         }
     }
     
+    //MARK: - zip(_:)
     @inlinable
     func merge<T>(_ other: Result<T, Failure>) -> Result<(Success, T), Failure> {
         flatMap { success in
