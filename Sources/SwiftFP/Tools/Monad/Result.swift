@@ -50,6 +50,17 @@ public extension Result where Failure == Error {
         }
     }
     
+    /// Returns a new result, mapping any success value using the given throwing transformation.
+    /// - Parameter transform: A throwing closure that takes the success value of this instance.
+    /// - Returns: A Result instance with the result of evaluating `transformation` as the new success value
+    /// if this instance represents a success.
+    @inlinable
+    func tryMap<T>(_ transform: (Success) throws -> T) -> Result<T, Failure> {
+        flatMap { success in
+            Result<T, Failure> { try transform(success) }
+        }
+    }
+    
     @inlinable
     func tryMap<T>(_ transform: (Success) async throws -> T) async -> Result<T, Failure> {
         await flatMap { success in
@@ -58,6 +69,7 @@ public extension Result where Failure == Error {
     }
     
     @inlinable
+    @discardableResult
     func apply<NewSuccess>(
         _ other: Result<(Success) -> NewSuccess, Failure>
     ) -> Result<NewSuccess, Failure> {

@@ -49,12 +49,30 @@ final class ResultTests: XCTestCase {
         case .failure: XCTFail()
         }
     }
+    
+    func test_tryMap() {
+        let sut = Result<Int, Error>
+            .success(1)
+            .tryMap(throwError(_:))
+        
+        switch sut {
+        case .success: XCTFail()
+            
+        case .failure(let failure):
+            XCTAssertTrue(failure is TestFail)
+        }
+    }
+    
+    func test_asyncTryMap() async {
+        
+    }
 }
 
 //MARK: - Helpers
 private extension ResultTests {
     struct TestFail: Error {}
     
+    func throwError(_ v: Int) throws -> Int { throw TestFail() }
     func asyncAddOne(_ v: Int) async -> Int { v + 1 }
     func asyncAddOneSuccess(_ v: Int) async -> Result<Int, Error> { .success(v + 1) }
     func asyncAddOneFailure(_ v: Int) async -> Result<Int, Error> { .failure(TestFail()) }
