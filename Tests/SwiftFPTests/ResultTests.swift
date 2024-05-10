@@ -128,6 +128,30 @@ final class ResultTests: XCTestCase {
             XCTAssertTrue(failure is TestFail)
         }
     }
+    
+    func test_asyncApply_success() async {
+        let functor = Result<(Int) async -> Int, Error>.success(asyncAddOne(_:))
+        let sut = await Sut.success(1).apply(functor)
+        
+        switch sut {
+        case .success(let success):
+            XCTAssertEqual(success, 2)
+            
+        case .failure: XCTFail()
+        }
+    }
+    
+    func test_asyncApply_fail() async {
+        let functor = Result<(Int) async -> Int, Error>.success(asyncAddOne(_:))
+        let sut = await Sut.failure(TestFail()).apply(functor)
+        
+        switch sut {
+        case .success: XCTFail()
+    
+        case .failure(let failure):
+            XCTAssertTrue(failure is TestFail)
+        }
+    }
 }
 
 //MARK: - Helpers

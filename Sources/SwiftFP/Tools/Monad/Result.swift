@@ -102,6 +102,20 @@ public extension Result where Failure == Error {
         }
     }
     
+    /// Asynchronously returns a new result, apply `Result` functor to  success value.
+    /// - Parameter functor: A `Result` functor that takes success value of this instance.
+    /// - Returns: A `Result` instance with the result of evaluating stored function as the new success value.
+    /// If any of given `Result` instances are failure, then produced `Result` will be failure.
+    @inlinable
+    @discardableResult
+    func apply<NewSuccess>(
+        _ functor: Result<(Success) async -> NewSuccess, Failure>
+    ) async -> Result<NewSuccess, Failure> {
+        await functor.flatMap { transform in
+            await self.map(transform)
+        }
+    }
+    
     //MARK: - zip(_:)
     @inlinable
     func merge<T>(_ other: Result<T, Failure>) -> Result<(Success, T), Failure> {
