@@ -139,3 +139,17 @@ public extension Result where Success == Data, Failure == Error {
         }
     }
 }
+
+/// Creates a `Result` of pairs built out of two underlying `Results`.
+/// - Parameters:
+///   - lhs: The first `Result` to zip.
+///   - rhs: The second `Result` to zip.
+/// - Returns: A `Result` of tuple pair, where the elements of pair are
+///   corresponding `success` of `lhs` and `rhs`, or `failure` if any of instances is `failure`.
+@inlinable
+public func zip<Success1, Success2>(
+    _ lhs: Result<Success1, Error>,
+    _ rhs: Result<Success2, Error>
+) -> Result<(Success1, Success2), Error> {
+    lhs.zip(rhs)
+}

@@ -166,7 +166,19 @@ final class ResultTests: XCTestCase {
             
         case .failure: XCTFail()
         }
+    }
+    
+    func test_zip_global() {
+        let lhs = Sut.success(1)
+        let rhs = Sut.success(2)
         
+        switch zip(lhs, rhs) {
+        case .success(let success):
+            XCTAssertEqual(success.0, 1)
+            XCTAssertEqual(success.1, 2)
+            
+        case .failure: XCTFail()
+        }
     }
 }
 
