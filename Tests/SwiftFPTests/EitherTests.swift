@@ -29,6 +29,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(0))
     }
     
+    //MARK: - map(_:)
     func test_map() {
         let sut = Either<Int, Int>
             .left(1)
@@ -37,7 +38,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .left(2))
     }
     
-    func test_mapOnRightBranchReturnRightBranch() {
+    func test_map_OnRightBranch_ReturnRightBranch() {
         let sut = Either<Int, Int>
             .right(1)
             .map { $0 + 1 }
@@ -53,7 +54,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(2))
     }
     
-    func test_mapRightOnLeftBranchReturnLeftBranch() {
+    func test_mapRight_OnLeftBranch_ReturnLeftBranch() {
         let sut = Either<Int, Int>
             .left(1)
             .mapRight { $0 + 1 }
@@ -61,6 +62,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .left(1))
     }
     
+    //MARK: - flatMap(_:)
     func test_flatMap() {
         let sut = Either<Int, Int>
             .left(1)
@@ -69,7 +71,15 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .left(1.description))
     }
     
-    func test_flatMapOnRightBranchReturnRightBranch() {
+    func test_asyncFlatMap() async {
+        let sut = await Either<Int, Int>
+            .left(1)
+            .flatMap(asyncAddOneToLeft(_:))
+        
+        XCTAssertEqual(sut, .left(2))
+    }
+    
+    func test_flatMap_OnRightBranch_ReturnRightBranch() {
         let sut = Either<Int, Int>
             .right(1)
             .flatMap { .left($0.description) }
@@ -77,6 +87,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(1))
     }
     
+    //MARK: - flatMapRight(_:)
     func test_flatMapRight() {
         let sut = Either<Int, Int>
             .right(1)
@@ -85,7 +96,15 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, .right(1.description))
     }
     
-    func test_flatMapRightOnLeftBranchReturnLeftBranch() {
+    func test_asyncFlatMapRight() async {
+        let sut = await Either<Int, Int>
+            .right(1)
+            .flatMapRight(asyncAddOneToRight)
+        
+        XCTAssertEqual(sut, .right(2))
+    }
+    
+    func test_flatMapRight_OnLeftBranch_ReturnLeftBranch() {
         let sut = Either<Int, Int>
             .left(1)
             .flatMapRight { .right($0.description) }
@@ -101,6 +120,7 @@ final class EitherTests: XCTestCase {
         XCTAssertEqual(sut, 1)
     }
     
+    //MARK: - apply(_:)
     func test_apply() {
         let descriptor = Either<(Int) -> String, Int>
             .left(\.description)
@@ -150,4 +170,11 @@ final class EitherTests: XCTestCase {
         
         XCTAssertEqual(sut, .left(1))
     }
+}
+
+private extension EitherTests {
+    //MARK: - Helpers
+    func addOne(_ v: Int) async -> Int { v + 1 }
+    func asyncAddOneToLeft(_ v: Int) async -> Either<Int,Int> { .left(v + 1) }
+    func asyncAddOneToRight(_ v: Int) async -> Either<Int,Int> { .right(v + 1) }
 }

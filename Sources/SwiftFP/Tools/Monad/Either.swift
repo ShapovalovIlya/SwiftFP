@@ -36,10 +36,10 @@ public enum Either<Left, Right> {
     /// - Parameter transform: A closure that takes the `left` value of this instance.
     /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
     @inlinable
-    public func asyncMap<AsyncLeft>(
+    public func map<AsyncLeft>(
         _ transform: (Left) async throws -> AsyncLeft
     ) async rethrows -> Either<AsyncLeft, Right> {
-        try await asyncFlatMap { left in
+        try await flatMap { left in
             try await .left(transform(left))
         }
     }
@@ -74,11 +74,12 @@ public enum Either<Left, Right> {
         }
     }
     
-    /// Returns a new result, mapping any `left` value using the given transformation and unwrapping the produced result.
-    /// - Parameter transform: A closure that takes the `left` value of the instance.
+    /// Returns a new result, mapping any `left` value using the given asynchronous transformation
+    /// and unwrapping the produced result.
+    /// - Parameter transform: A asynchronous closure that takes the `left` value of the instance.
     /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
     @inlinable
-    public func asyncFlatMap<AsyncLeft>(
+    public func flatMap<AsyncLeft>(
         _ transform: (Left) async throws -> Either<AsyncLeft, Right>
     ) async rethrows -> Either<AsyncLeft, Right> {
         switch self {
@@ -103,6 +104,23 @@ public enum Either<Left, Right> {
             
         case .right(let right):
             return try transform(right)
+        }
+    }
+    
+    /// Returns a new result, mapping any `right` value using the given asynchronous transformation
+    /// and unwrapping the produced result.
+    /// - Parameter transform: A asynchronous closure that takes the `right` value of the instance.
+    /// - Returns: A `Either` instance, either from the closure or the previous `.left`.
+    @inlinable
+    public func flatMapRight<NewRight>(
+        _ transform: (Right) async throws -> Either<Left, NewRight>
+    ) async rethrows -> Either<Left, NewRight> {
+        switch self {
+        case .left(let left):
+            return .left(left)
+            
+        case .right(let right):
+            return try await transform(right)
         }
     }
     
