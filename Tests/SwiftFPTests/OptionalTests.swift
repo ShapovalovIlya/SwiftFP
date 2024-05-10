@@ -9,6 +9,7 @@ import XCTest
 import SwiftFP
 
 final class OptionalTests: XCTestCase {
+    //MARK: - apply(_:)
     func test_someValue_apply_someFunctor() {
         let functor = Optional(addOne)
         let sut = Optional(1)
@@ -33,6 +34,31 @@ final class OptionalTests: XCTestCase {
         XCTAssertNil(sut)
     }
     
+    func test_someValue_asyncApply_someFunctor() async {
+        let functor = Optional(asyncAddOne)
+        let sut = await Optional(1)
+            .apply(functor)
+        
+        XCTAssertEqual(sut, 2)
+    }
+    
+    func test_someValue_asyncApply_nilFunctor() async {
+        let functor = Optional<(Int) async -> Int>.none
+        let sut = await Optional(1)
+            .apply(functor)
+        
+        XCTAssertNil(sut)
+    }
+    
+    func test_nilValue_asyncApply_someFunctor() async {
+        let functor = Optional(asyncAddOne)
+        let sut = await Optional<Int>.none
+            .apply(functor)
+        
+        XCTAssertNil(sut)
+    }
+    
+    //MARK: - flatMap(_:)
     func test_someValue_asyncFlatMap() async {
         let sut = await Optional(1)
             .flatMap(asyncAddOneOpt(_:))
@@ -48,6 +74,7 @@ final class OptionalTests: XCTestCase {
         XCTAssertNil(sut)
     }
     
+    //MARK: - map(_:)
     func test_someValue_asyncMap() async {
         let sut = await Optional(1)
             .map(asyncAddOne(_:))
@@ -56,6 +83,7 @@ final class OptionalTests: XCTestCase {
     }
 }
 
+//MARK: - Helpers
 private extension OptionalTests {
     func addOne(_ v: Int) -> Int { v + 1 }
     func asyncAddOne(_ v: Int) async -> Int { v + 1 }

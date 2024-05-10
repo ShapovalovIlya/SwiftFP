@@ -49,6 +49,20 @@ public extension Optional {
             try self.map(transform)
         }
     }
+    
+    /// Evaluates given asynchronous  function when both `Optional` instances of function and value are not `nil`,
+    /// passing the unwrapped value as a parameter.
+    /// - Parameter functor: A `Optional`asynchronous function that takes the unwrapped value of the instance.
+    /// - Returns: The result of the given function. If some of this instances is nil, returns nil.
+    @inlinable
+    @discardableResult
+    func apply<NewWrapped>(
+        _ asyncFunctor: Optional<(Wrapped) async throws -> NewWrapped>
+    ) async rethrows -> Optional<NewWrapped> {
+        try await asyncFunctor.flatMap { transform in
+            try await self.map(transform)
+        }
+    }
        
     /// Zip two optional values.
     /// - Parameter other: optional value to combine with
