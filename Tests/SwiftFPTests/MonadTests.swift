@@ -25,7 +25,7 @@ final class MonadTests: XCTestCase {
         let sut = Monad(1)
         
         let result = sut.flatMap { Monad($0 + 1) }
-        Optional(1).map(<#T##transform: (Int) throws -> U##(Int) throws -> U#>)
+       
         XCTAssertEqual(result.value, 2)
     }
     
