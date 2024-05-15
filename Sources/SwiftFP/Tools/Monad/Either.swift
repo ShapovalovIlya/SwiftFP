@@ -18,6 +18,21 @@ public enum Either<Left, Right> {
         self = block()
     }
     
+    //MARK: - subscrips
+    subscript<T>(left keyPath: KeyPath<Left, T>) -> T? {
+        switch self {
+        case .left(let left): return left[keyPath: keyPath]
+        case .right: return nil
+        }
+    }
+    
+    subscript<T>(right keyPath: KeyPath<Right, T>) -> T? {
+        switch self {
+        case .left: return nil
+        case .right(let right): return right[keyPath: keyPath]
+        }
+    }
+    
     //MARK: - map(_:)
     
     /// Returns a new result, mapping any `left` value using the given transformation.

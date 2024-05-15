@@ -12,7 +12,7 @@ final class MonadTests: XCTestCase {
     func test_map() {
         let sut = Monad(1)
         
-        let result = sut.map { $0 + 1 }
+        let result = sut.map(addOne(_:))
         let result2 = result.map { $0 + 2 }
         let result3 = result2.map { $0 + 3 }
         
@@ -25,8 +25,39 @@ final class MonadTests: XCTestCase {
         let sut = Monad(1)
         
         let result = sut.flatMap { Monad($0 + 1) }
-        
+        Optional(1).map(<#T##transform: (Int) throws -> U##(Int) throws -> U#>)
         XCTAssertEqual(result.value, 2)
     }
+    
+    func test_apply() {
+        let functor = Monad(addOne)
+        let sut = Monad(1).apply(functor)
+        
+        XCTAssertEqual(sut.value, 2)
+    }
+    
+    func test_asyncMap() async {
+        let sut = await Monad(1).asyncMap(addOneAsync(_:))
+        
+        XCTAssertEqual(sut.value, 2)
+    }
+    
+    func test_asyncFlatMap() async {
+        let sut = await Monad(1).asyncFlatMap(addMonadAsync)
+        
+        XCTAssertEqual(sut.value, 2)
+    }
 
+    func test_asyncApply() async {
+        let functor = Monad(addOneAsync)
+        let sut = await Monad(1).asyncApply(functor)
+        
+        XCTAssertEqual(sut.value, 2)
+    }
+}
+
+private extension MonadTests {
+    func addOne(_ val: Int) -> Int { val + 1 }
+    func addOneAsync(_ val: Int) async -> Int { val + 1 }
+    func addMonadAsync(_ val: Int) -> Monad<Int> { Monad(val + 1) }
 }
