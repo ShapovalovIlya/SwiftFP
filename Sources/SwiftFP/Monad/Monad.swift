@@ -13,6 +13,7 @@ public struct Monad<Wrapped> {
     public let value: Wrapped
     
     //MARK: - init(_:)
+    /// Creates an instance that stores the given value.
     @inlinable
     public init(_ value: Wrapped) { self.value = value }
 
@@ -25,8 +26,8 @@ public struct Monad<Wrapped> {
     //MARK: - map(_:)
     
     /// Evaluates the given closure, passing the unwrapped value as a parameter.
-    /// - Parameter transform: <#transform description#>
-    /// - Returns: <#description#>
+    /// - Parameter transform: A closure that takes the unwrapped value of the instance.
+    /// - Returns: The result of the given closure wrapped in `Monad`.
     @inlinable
     public func map<U>(
         _ transform: (Wrapped) throws -> U
@@ -34,6 +35,11 @@ public struct Monad<Wrapped> {
         Monad<U>(try transform(value))
     }
     
+    /**
+     Evaluates the given asynchronous closure, passing the unwrapped value as a parameter.
+      - Parameter transform: A asynchronous closure that takes the unwrapped value of the instance.
+      - Returns: The asynchronous result of the given closure wrapped in `Monad`.
+     */
     @inlinable
     public func asyncMap<U>(
         _ transform: (Wrapped) async throws -> U
@@ -77,3 +83,9 @@ public struct Monad<Wrapped> {
 }
 
 extension Monad: Equatable where Wrapped: Equatable {}
+
+extension Monad: Comparable where Wrapped: Comparable {
+    public static func < (lhs: Monad<Wrapped>, rhs: Monad<Wrapped>) -> Bool {
+        lhs.value < rhs.value
+    }
+}
