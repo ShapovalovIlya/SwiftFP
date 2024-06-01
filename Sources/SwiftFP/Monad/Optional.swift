@@ -72,5 +72,14 @@ public extension Optional {
             other.map { (wrapped, $0) }
         }
     }
+}
 
+/// Zip two optional values.
+/// - Parameters:
+///   - lhs: first optional value to combine
+///   - rhs: second optional value to combine
+/// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
+@inlinable
+public func zip<A, B>(_ lhs: A?, _ rhs: B?) -> (A, B)? {
+    lhs.zip(rhs)
 }

@@ -81,6 +81,56 @@ final class OptionalTests: XCTestCase {
         
         XCTAssertEqual(sut, 2)
     }
+    
+    //MARK: - zip(_:_:)
+    func test_zip_someValueWithSomeValue() {
+        let sut = Optional(1).zip("a")
+        
+        XCTAssertEqual(sut?.0, 1)
+        XCTAssertEqual(sut?.1, "a")
+    }
+    
+    func test_zip_someValueWithNil() {
+        let other = Optional<String>.none
+        let sut = Optional(1).zip(other)
+        
+        XCTAssertNil(sut)
+    }
+    
+    func test_zip_nilWithSomeValue() {
+        let other = Optional(1)
+        let sut = Optional<String>.none.zip(other)
+        
+        XCTAssertNil(sut)
+    }
+    
+    func test_zipGlobal_someValueWithSomeValue() {
+        let sut = zip(
+            Optional(1),
+            Optional("a")
+        )
+        
+        XCTAssertEqual(sut?.0, 1)
+        XCTAssertEqual(sut?.1, "a")
+    }
+    
+    func test_zipGlobal_someValueWithNil() {
+        let sut = zip(
+            Optional(1),
+            Optional<String>.none
+        )
+        
+        XCTAssertNil(sut)
+    }
+    
+    func test_zipGlobal_nilWithSomeValue() {
+        let sut = zip(
+            Optional<Int>.none,
+            Optional("a")
+        )
+        
+        XCTAssertNil(sut)
+    }
 }
 
 //MARK: - Helpers
