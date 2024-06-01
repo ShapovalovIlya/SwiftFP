@@ -54,6 +54,23 @@ final class MonadTests: XCTestCase {
         
         XCTAssertEqual(sut.value, 2)
     }
+    
+    func test_zip() {
+        let sut = Monad(1).zip(Monad("a"))
+        
+        XCTAssertEqual(sut.0, 1)
+        XCTAssertEqual(sut.1, "a")
+    }
+    
+    func test_zip_global() {
+        let sut = zip(
+            Monad(1),
+            Monad("a")
+        )
+        
+        XCTAssertEqual(sut.0, 1)
+        XCTAssertEqual(sut.1, "a")
+    }
 }
 
 private extension MonadTests {
