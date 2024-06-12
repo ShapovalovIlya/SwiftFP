@@ -6,61 +6,52 @@
 //
 
 import XCTest
+import Testing
 @testable import SwiftFP
 
+@Suite("Either tests")
+struct EitherTestsSuite {
+    typealias Sut = Either<Int, String>
+    
+    //MARK: - mocks
+    private static let states = Array<Sut>(arrayLiteral: .left(1), .right("baz"))
+    
+    //MARK: - tests
+    @Test("Initial state for branching initialization", arguments: [true, false])
+    func initialState(condition: Bool) async throws {
+        let sut = Sut {
+            condition ? .left(1) : .right("baz")
+        }
+        condition ? #expect(sut == .left(1)) : #expect(sut == .right("baz"))
+    }
+
+    @Test("map(_:) on different branches", arguments: states)
+    func mapEither(initialState: Sut) async throws {
+        let sut = initialState.map { $0 + 1 }
+        
+        switch initialState {
+        case let .left(val):
+            #expect(sut == .left(val + 1))
+        case .right:
+            #expect(sut == initialState)
+        }
+    }
+    
+    @Test("mapRight(_:) on different branches", arguments: states)
+    func mapRightEither(initialState: Sut) async throws {
+        let sut = initialState.mapRight(\.capitalized)
+        
+        switch initialState {
+        case .left:
+            #expect(sut == initialState)
+            
+        case let .right(string):
+            #expect(sut == .right(string.capitalized))
+        }
+    }
+}
+
 final class EitherTests: XCTestCase {
-    func test_leftState() {
-        let bool = true
-        let sut = Either<Int, Int> {
-            if bool { return .left(1) }
-            return .right(0)
-        }
-        
-        XCTAssertEqual(sut, .left(1))
-    }
-    
-    func test_rightState() {
-        let bool = false
-        let sut = Either<Int, Int> {
-            if bool { return .left(1) }
-            return .right(0)
-        }
-        
-        XCTAssertEqual(sut, .right(0))
-    }
-    
-    //MARK: - map(_:)
-    func test_map() {
-        let sut = Either<Int, Int>
-            .left(1)
-            .map { $0 + 1 }
-        
-        XCTAssertEqual(sut, .left(2))
-    }
-    
-    func test_map_OnRightBranch_ReturnRightBranch() {
-        let sut = Either<Int, Int>
-            .right(1)
-            .map { $0 + 1 }
-        
-        XCTAssertEqual(sut, .right(1))
-    }
-    
-    func test_mapRight() {
-        let sut = Either<Int, Int>
-            .right(1)
-            .mapRight { $0 + 1 }
-        
-        XCTAssertEqual(sut, .right(2))
-    }
-    
-    func test_mapRight_OnLeftBranch_ReturnLeftBranch() {
-        let sut = Either<Int, Int>
-            .left(1)
-            .mapRight { $0 + 1 }
-        
-        XCTAssertEqual(sut, .left(1))
-    }
     
     //MARK: - flatMap(_:)
     func test_flatMap() {

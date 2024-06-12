@@ -9,6 +9,7 @@ import Foundation
 
 /// A value that represents branching, including an associated value in each case.
 /// Perform `map`, `flatMap` either `mapRight`, `flatMapRight`.
+@frozen
 public enum Either<Left, Right> {
     case left(Left)
     case right(Right)

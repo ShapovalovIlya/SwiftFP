@@ -102,7 +102,6 @@ public struct Monad<Wrapped> {
     }
 }
 
-
 /// Zip two `Monad` instances
 /// - Parameters:
 ///   - lhs: first `Monad` to combine with

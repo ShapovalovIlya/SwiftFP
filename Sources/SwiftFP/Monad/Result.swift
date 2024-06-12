@@ -133,7 +133,9 @@ public extension Result where Failure == Error {
 
 public extension Result where Success == Data, Failure == Error {
     @inlinable
-    func decode<T: Decodable>(_ type: T.Type, decoder: JSONDecoder) -> Result<T, Failure> {
+    func decode<T: Decodable>(
+        _ type: T.Type, decoder: JSONDecoder
+    ) -> Result<T, Failure> {
         flatMap { success in
             Result<T, Failure> { try decoder.decode(type.self, from: success) }
         }
