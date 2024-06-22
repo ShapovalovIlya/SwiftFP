@@ -82,7 +82,7 @@ public struct Monad<Wrapped> {
     /// - Returns: The result of given function wrapped in `Monad`
     @inlinable
     public func asyncApply<U>(
-        _ functor: Monad<(Wrapped) async -> U>
+        _ functor: Monad<@Sendable (Wrapped) async -> U>
     ) async -> Monad<U> {
         await functor.asyncFlatMap { transform in
             await self.asyncMap(transform)

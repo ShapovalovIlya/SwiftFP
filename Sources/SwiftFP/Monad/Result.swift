@@ -109,7 +109,7 @@ public extension Result where Failure == Error {
     @inlinable
     @discardableResult
     func asyncApply<NewSuccess>(
-        _ functor: Result<(Success) async -> NewSuccess, Failure>
+        _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         await functor.asyncFlatMap { transform in
             await self.asyncMap(transform)

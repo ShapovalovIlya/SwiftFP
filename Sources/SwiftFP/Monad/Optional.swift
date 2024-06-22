@@ -56,7 +56,7 @@ public extension Optional {
     @inlinable
     @discardableResult
     func asyncApply<NewWrapped>(
-        _ asyncFunctor: Optional<(Wrapped) async throws -> NewWrapped>
+        _ asyncFunctor: Optional<@Sendable (Wrapped) async throws -> NewWrapped>
     ) async rethrows -> Optional<NewWrapped> {
         try await asyncFunctor.asyncFlatMap { transform in
             try await self.asyncMap(transform)
