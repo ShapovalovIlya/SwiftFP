@@ -130,7 +130,7 @@ final class ResultTests: XCTestCase {
     }
     
     func test_asyncApply_success() async {
-        let functor = Result<(Int) async -> Int, Error>.success(asyncAddOne(_:))
+        let functor = Result<@Sendable (Int) async -> Int, Error>.success(asyncAddOne(_:))
         let sut = await Sut.success(1).asyncApply(functor)
         
         switch sut {
@@ -142,7 +142,7 @@ final class ResultTests: XCTestCase {
     }
     
     func test_asyncApply_fail() async {
-        let functor = Result<(Int) async -> Int, Error>.success(asyncAddOne(_:))
+        let functor = Result<@Sendable (Int) async -> Int, Error>.success(asyncAddOne(_:))
         let sut = await Sut.failure(TestFail()).asyncApply(functor)
         
         switch sut {
@@ -189,7 +189,7 @@ private extension ResultTests {
     func addOne(_ v: Int) -> Int { v + 1 }
     func throwError(_ v: Int) throws -> Int { throw TestFail() }
     func asyncThrowError(_ v: Int) async throws -> Int { throw TestFail() }
-    func asyncAddOne(_ v: Int) async -> Int { v + 1 }
+    @Sendable func asyncAddOne(_ v: Int) async -> Int { v + 1 }
     func asyncAddOneSuccess(_ v: Int) async -> Result<Int, Error> { .success(v + 1) }
     func asyncAddOneFailure(_ v: Int) async -> Result<Int, Error> { .failure(TestFail()) }
 }

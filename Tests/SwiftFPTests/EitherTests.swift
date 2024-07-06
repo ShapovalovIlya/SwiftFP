@@ -65,7 +65,7 @@ final class EitherTests: XCTestCase {
     func test_asyncFlatMap() async {
         let sut = await Either<Int, Int>
             .left(1)
-            .flatMap(asyncAddOneToLeft(_:))
+            .asyncFlatMap(asyncAddOneToLeft(_:))
         
         XCTAssertEqual(sut, .left(2))
     }
@@ -90,7 +90,7 @@ final class EitherTests: XCTestCase {
     func test_asyncFlatMapRight() async {
         let sut = await Either<Int, Int>
             .right(1)
-            .flatMapRight(asyncAddOneToRight)
+            .asyncFlatMapRight(asyncAddOneToRight)
         
         XCTAssertEqual(sut, .right(2))
     }

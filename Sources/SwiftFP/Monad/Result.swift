@@ -142,6 +142,8 @@ public extension Result where Success == Data, Failure == Error {
     }
 }
 
+extension Result: Sendable where Success: Sendable, Failure: Sendable {}
+
 /// Creates a `Result` of pairs built out of two underlying `Results`.
 /// - Parameters:
 ///   - lhs: The first `Result` to zip.

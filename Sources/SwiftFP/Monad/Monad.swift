@@ -81,6 +81,8 @@ public struct Monad<Wrapped> {
     /// - Parameter functor: a `Monad` instance with asynchronous function as wrapped value
     /// - Returns: The result of given function wrapped in `Monad`
     @inlinable
+    @discardableResult
+    @Sendable
     public func asyncApply<U>(
         _ functor: Monad<@Sendable (Wrapped) async -> U>
     ) async -> Monad<U> {

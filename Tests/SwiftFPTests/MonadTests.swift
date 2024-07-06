@@ -75,6 +75,6 @@ final class MonadTests: XCTestCase {
 
 private extension MonadTests {
     func addOne(_ val: Int) -> Int { val + 1 }
-    func addOneAsync(_ val: Int) async -> Int { val + 1 }
+    @Sendable func addOneAsync(_ val: Int) async -> Int { val + 1 }
     func addMonadAsync(_ val: Int) -> Monad<Int> { Monad(val + 1) }
 }

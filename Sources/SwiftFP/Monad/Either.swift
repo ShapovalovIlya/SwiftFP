@@ -55,7 +55,7 @@ public enum Either<Left, Right> {
     public func map<AsyncLeft>(
         _ transform: (Left) async throws -> AsyncLeft
     ) async rethrows -> Either<AsyncLeft, Right> {
-        try await flatMap { left in
+        try await asyncFlatMap { left in
             try await .left(transform(left))
         }
     }
@@ -95,7 +95,7 @@ public enum Either<Left, Right> {
     /// - Parameter transform: A asynchronous closure that takes the `left` value of the instance.
     /// - Returns: A `Either` instance, either from the closure or the previous `.right`.
     @inlinable
-    public func flatMap<AsyncLeft>(
+    public func asyncFlatMap<AsyncLeft>(
         _ transform: (Left) async throws -> Either<AsyncLeft, Right>
     ) async rethrows -> Either<AsyncLeft, Right> {
         switch self {
@@ -128,7 +128,7 @@ public enum Either<Left, Right> {
     /// - Parameter transform: A asynchronous closure that takes the `right` value of the instance.
     /// - Returns: A `Either` instance, either from the closure or the previous `.left`.
     @inlinable
-    public func flatMapRight<NewRight>(
+    public func asyncFlatMapRight<NewRight>(
         _ transform: (Right) async throws -> Either<Left, NewRight>
     ) async rethrows -> Either<Left, NewRight> {
         switch self {
