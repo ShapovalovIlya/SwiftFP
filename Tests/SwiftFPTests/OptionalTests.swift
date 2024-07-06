@@ -6,7 +6,23 @@
 //
 
 import XCTest
+import Testing
 import SwiftFP
+
+@Suite("Optional tests")
+struct OptionalTestNew {
+    
+    @Test("Test Optional filter", arguments: [1, 2])
+    func filterWrappedValue(value: Int) async throws {
+        let sut = Optional(value).filter { $0.isMultiple(of: 2) }
+        
+        value.isMultiple(of: 2)
+        ? #expect(sut != nil)
+        : #expect(sut == nil)
+    }
+    
+    
+}
 
 final class OptionalTests: XCTestCase {
     //MARK: - apply(_:)
@@ -43,7 +59,7 @@ final class OptionalTests: XCTestCase {
     }
     
     func test_someValue_asyncApply_nilFunctor() async {
-        let functor = Optional<(Int) async -> Int>.none
+        let functor = Optional<@Sendable (Int) async -> Int>.none
         let sut = await Optional(1)
             .asyncApply(functor)
         
@@ -136,6 +152,6 @@ final class OptionalTests: XCTestCase {
 //MARK: - Helpers
 private extension OptionalTests {
     func addOne(_ v: Int) -> Int { v + 1 }
-    func asyncAddOne(_ v: Int) async -> Int { v + 1 }
-    func asyncAddOneOpt(_ v: Int) async -> Int? { .some(v + 1) }
+    @Sendable func asyncAddOne(_ v: Int) async -> Int { v + 1 }
+    @Sendable func asyncAddOneOpt(_ v: Int) async -> Int? { .some(v + 1) }
 }

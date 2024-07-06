@@ -49,7 +49,7 @@ public extension Optional {
         }
     }
     
-    /// Evaluates given asynchronous  function when both `Optional` instances of function and value are not `nil`,
+    /// Evaluates given asynchronous function when both `Optional` instances of function and value are not `nil`,
     /// passing the unwrapped value as a parameter.
     /// - Parameter functor: A `Optional`asynchronous function that takes the unwrapped value of the instance.
     /// - Returns: The result of the given function. If some of this instances is nil, returns nil.
@@ -71,6 +71,17 @@ public extension Optional {
         flatMap { wrapped in
             other.map { (wrapped, $0) }
         }
+    }
+    
+    
+    /// Filter wrapped value with given predicate.
+    /// - Parameter predicate: A closure that takes the unwrapped value of the instance
+    /// - Returns: New instance if wrapped value match given predicate. Otherwise return `nil`.
+    @inlinable
+    func filter(
+        _ predicate: (Wrapped) throws -> Bool
+    ) rethrows -> Wrapped? {
+        try flatMap { try predicate($0) ? $0 : nil }
     }
 }
 
