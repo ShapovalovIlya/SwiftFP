@@ -74,14 +74,14 @@ public extension Optional {
     }
     
     
-    /// Filter wrapped value with given predicate.
-    /// - Parameter predicate: A closure that takes the unwrapped value of the instance
-    /// - Returns: New instance if wrapped value match given predicate. Otherwise return `nil`.
+    /// Filter wrapped value with given condition.
+    /// - Parameter condition: A closure that takes the unwrapped value of the instance
+    /// - Returns: New instance if wrapped value match given condition. Otherwise return `nil`.
     @inlinable
     func filter(
-        _ predicate: (Wrapped) throws -> Bool
+        _ condition: (Wrapped) throws -> Bool
     ) rethrows -> Wrapped? {
-        try flatMap { try predicate($0) ? $0 : nil }
+        try flatMap { try condition($0) ? $0 : nil }
     }
 }
 
