@@ -66,7 +66,7 @@ public extension Result {
     
     /// Returns a new result, mapping any success value using the given asynchronous transformation.
     /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
-    /// - Returns: A Result instance with the result of evaluating `transform` as the new success value
+    /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
     @discardableResult
@@ -80,7 +80,7 @@ public extension Result {
     
     /// Returns a new result, mapping any success value using the given asynchronous throwing transformation.
     /// - Parameter transform: A asynchronous throwing closure that takes the success value of this instance.
-    /// - Returns: A `Result` instance with the result of evaluating `transformation` as the new success value
+    /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
     func asyncMap<NewSuccess>(
@@ -142,7 +142,8 @@ public extension Result {
 public extension Result where Success == Data {
     @inlinable
     func decodeJSON<T: Decodable>(
-        _ type: T.Type, decoder: JSONDecoder
+        _ type: T.Type,
+        decoder: JSONDecoder
     ) -> Result<T, Error> {
         map { try decoder.decode(type.self, from: $0) }
     }
