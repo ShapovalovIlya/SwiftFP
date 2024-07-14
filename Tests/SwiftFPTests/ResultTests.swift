@@ -55,7 +55,7 @@ final class ResultTests: XCTestCase {
     func test_tryMap_success() {
         let sut = Sut
             .success(1)
-            .tryMap(addOne(_:))
+            .map(addOne(_:))
         
         switch sut {
         case .success(let success):
@@ -68,7 +68,7 @@ final class ResultTests: XCTestCase {
     func test_tryMap_fail() {
         let sut = Sut
             .success(1)
-            .tryMap(throwError(_:))
+            .map(throwError(_:))
         
         switch sut {
         case .success: XCTFail()
@@ -81,7 +81,7 @@ final class ResultTests: XCTestCase {
     func test_asyncTryMap_success() async {
         let sut = await Sut
             .success(1)
-            .asyncTryMap(asyncAddOne)
+            .asyncMap(asyncAddOne)
         
         switch sut {
         case .success(let success):
@@ -94,7 +94,7 @@ final class ResultTests: XCTestCase {
     func test_asyncTryMap_fail() async {
         let sut = await Sut
             .success(1)
-            .asyncTryMap(asyncThrowError)
+            .asyncMap(asyncThrowError)
         
         switch sut {
         case .success: XCTFail()

@@ -6,9 +6,8 @@
 //
 
 import Foundation
- 
+
 public extension Result where Failure == Error {
-    
     //MARK: - init(_:)
     
     /// Asynchronously Creates a new result by evaluating a asynchronous throwing closure,
@@ -24,6 +23,9 @@ public extension Result where Failure == Error {
         }
     }
     
+}
+
+public extension Result {
     //MARK: - flatMap(_:)
     
     /// Returns a new result, asynchronous mapping any success value using the given `transformation`
@@ -45,31 +47,34 @@ public extension Result where Failure == Error {
     }
     
     //MARK: - map(_:)
-    
-    /// Returns a new result, mapping any success value using the given asynchronous transformation.
-    /// - Parameter asyncTransform: A asynchronous closure that takes the success value of this instance.
-    /// - Returns: A Result instance with the result of evaluating `asyncTransform` as the new success value
-    /// if this instance represents a success.
-    @inlinable
-    @discardableResult
-    func asyncMap<NewSuccess>(
-        _ asyncTransform: (Success) async -> NewSuccess
-    ) async -> Result<NewSuccess, Failure> {
-        await asyncFlatMap { success in
-            await .success(asyncTransform(success))
-        }
-    }
-    
     /// Returns a new result, mapping any success value using the given throwing transformation.
     /// - Parameter transform: A throwing closure that takes the success value of this instance.
     /// - Returns: A Result instance with the result of evaluating `transformation` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func tryMap<NewSuccess>(
+    func map<NewSuccess>(
         _ transform: (Success) throws -> NewSuccess
-    ) -> Result<NewSuccess, Failure> {
-        flatMap { success in
-            Result<NewSuccess, Failure> { try transform(success) }
+    ) -> Result<NewSuccess, Error> {
+        switch self {
+        case .success(let success):
+            return Result<NewSuccess, Error> { try transform(success) }
+            
+        case .failure(let failure):
+            return .failure(failure)
+        }
+    }
+    
+    /// Returns a new result, mapping any success value using the given asynchronous transformation.
+    /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
+    /// - Returns: A Result instance with the result of evaluating `transform` as the new success value
+    /// if this instance represents a success.
+    @inlinable
+    @discardableResult
+    func asyncMap<NewSuccess>(
+        _ transform: (Success) async -> NewSuccess
+    ) async -> Result<NewSuccess, Failure> {
+        await asyncFlatMap { success in
+            await .success(transform(success))
         }
     }
     
@@ -78,11 +83,15 @@ public extension Result where Failure == Error {
     /// - Returns: A `Result` instance with the result of evaluating `transformation` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func asyncTryMap<NewSuccess>(
+    func asyncMap<NewSuccess>(
         _ transform: (Success) async throws -> NewSuccess
-    ) async -> Result<NewSuccess, Failure> {
-        await asyncFlatMap { success in
-            await Result<NewSuccess, Failure> { try await transform(success) }
+    ) async -> Result<NewSuccess, Error> {
+        switch self {
+        case .success(let success):
+            return await Result<NewSuccess, Error> { try await transform(success) }
+            
+        case .failure(let failure):
+            return .failure(failure)
         }
     }
     
@@ -128,17 +137,14 @@ public extension Result where Failure == Error {
             other.map { (success, $0) }
         }
     }
-    
 }
 
-public extension Result where Success == Data, Failure == Error {
+public extension Result where Success == Data {
     @inlinable
-    func decode<T: Decodable>(
+    func decodeJSON<T: Decodable>(
         _ type: T.Type, decoder: JSONDecoder
-    ) -> Result<T, Failure> {
-        flatMap { success in
-            Result<T, Failure> { try decoder.decode(type.self, from: success) }
-        }
+    ) -> Result<T, Error> {
+        map { try decoder.decode(type.self, from: $0) }
     }
 }
 
