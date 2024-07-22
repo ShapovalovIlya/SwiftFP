@@ -73,7 +73,6 @@ public extension Optional {
         }
     }
     
-    
     /// Filter wrapped value with given condition.
     /// - Parameter condition: A closure that takes the unwrapped value of the instance
     /// - Returns: New instance if wrapped value match given condition. Otherwise return `nil`.

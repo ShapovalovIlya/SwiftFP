@@ -21,17 +21,13 @@ public enum Either<Left, Right> {
     
     //MARK: - subscrips
     subscript<T>(left keyPath: KeyPath<Left, T>) -> T? {
-        switch self {
-        case .left(let left): return left[keyPath: keyPath]
-        case .right: return nil
-        }
+        if case .left(let left) = self { return left[keyPath: keyPath] }
+        return nil
     }
     
     subscript<T>(right keyPath: KeyPath<Right, T>) -> T? {
-        switch self {
-        case .left: return nil
-        case .right(let right): return right[keyPath: keyPath]
-        }
+        if case .right(let right) = self { return right[keyPath: keyPath] }
+        return nil
     }
     
     //MARK: - map(_:)
@@ -140,16 +136,6 @@ public enum Either<Left, Right> {
         }
     }
     
-    /// Returns a new value, mapping any result from `Either` using the given transformation.
-    /// - Parameter transform: A closure that takes the unwrapped value of the instance.
-    /// - Returns: A new type instance, from the closure.
-    @inlinable
-    public func flatMap<T>(
-        _ transform: (Either<Left, Right>) throws -> T
-    ) rethrows -> T {
-        try transform(self)
-    }
-    
     //MARK: - apply(_:)
     
     @inlinable
@@ -184,3 +170,4 @@ extension Either where Left == Right {
 }
 
 extension Either: Equatable where Left: Equatable, Right: Equatable {}
+extension Either: Sendable where Left: Sendable, Right: Sendable {}

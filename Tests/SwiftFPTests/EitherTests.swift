@@ -22,7 +22,7 @@ struct EitherTestsSuite {
         let sut = Sut {
             condition ? .left(1) : .right("baz")
         }
-        condition ? #expect(sut == .left(1)) : #expect(sut == .right("baz"))
+        #expect(condition ? sut == .left(1) : sut == .right("baz"))
     }
 
     @Test("map(_:) on different branches", arguments: states)
@@ -101,14 +101,6 @@ final class EitherTests: XCTestCase {
             .flatMapRight { .right($0.description) }
         
         XCTAssertEqual(sut, .left(1))
-    }
-    
-    func test_flatMapEitherToNewValue() {
-        let sut = Either<Int, Int>
-            .left(0)
-            .flatMap { _ in 1 }
-        
-        XCTAssertEqual(sut, 1)
     }
     
     //MARK: - apply(_:)
