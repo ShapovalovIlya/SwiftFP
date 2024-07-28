@@ -24,6 +24,18 @@ public struct Monad<Wrapped> {
         value[keyPath: keyPath]
     }
     
+    
+    /// Perform in place mutation on wrapped value.
+    /// - Parameter body: closure that takes wrapped value as `inout` parameter.
+    @inlinable
+    public func mutate(_ body: (inout Wrapped) -> Void) -> Self {
+        map { old in
+            var new = old
+            body(&new)
+            return new
+        }
+    }
+    
     //MARK: - map(_:)
     
     /// Evaluates the given closure, passing the unwrapped value as a parameter.
@@ -42,7 +54,7 @@ public struct Monad<Wrapped> {
       - Returns: The asynchronous result of the given closure wrapped in `Monad`.
      */
     @inlinable
-    public func asyncMap<U>(
+    public func map<U>(
         _ transform: (Wrapped) async throws -> U
     ) async rethrows -> Monad<U> {
         Monad<U>(try await transform(value))
@@ -57,7 +69,7 @@ public struct Monad<Wrapped> {
     }
     
     @inlinable
-    public func asyncFlatMap<U>(
+    public func flatMap<U>(
         _ transform: (Wrapped) async throws -> Monad<U>
     ) async rethrows -> Monad<U> {
         try await transform(value)
@@ -69,6 +81,7 @@ public struct Monad<Wrapped> {
     /// - Parameter functor: a `Monad` instance with function as wrapped value
     /// - Returns: The result of given function wrapped in `Monad`
     @inlinable
+    @discardableResult
     public func apply<U>(
         _ functor: Monad<(Wrapped) -> U>
     ) -> Monad<U> {
@@ -82,12 +95,11 @@ public struct Monad<Wrapped> {
     /// - Returns: The result of given function wrapped in `Monad`
     @inlinable
     @discardableResult
-    @Sendable
-    public func asyncApply<U>(
+    public func apply<U>(
         _ functor: Monad<@Sendable (Wrapped) async -> U>
     ) async -> Monad<U> {
-        await functor.asyncFlatMap { transform in
-            await self.asyncMap(transform)
+        await functor.flatMap { transform in
+            await self.map(transform)
         }
     }
     
@@ -115,7 +127,7 @@ public func zip<A, B>(_ lhs: Monad<A>, _ rhs: Monad<B>) -> Monad<(A, B)> {
 }
 
 extension Monad: Equatable where Wrapped: Equatable {}
-
+extension Monad: Sendable where Wrapped: Sendable {}
 extension Monad: Comparable where Wrapped: Comparable {
     @inlinable
     public static func < (lhs: Monad<Wrapped>, rhs: Monad<Wrapped>) -> Bool {
