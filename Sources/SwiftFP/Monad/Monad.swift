@@ -24,6 +24,16 @@ public struct Monad<Wrapped> {
         value[keyPath: keyPath]
     }
     
+    @inlinable
+    public subscript<T>(
+        dynamicMember keyPath: WritableKeyPath<Wrapped, T>
+    ) -> (T) -> Self {
+        { newValue in
+            var new = value
+            new[keyPath: keyPath] = newValue
+            return Monad(new)
+        }
+    }
     
     /// Perform in place mutation on wrapped value.
     /// - Parameter body: closure that takes wrapped value as `inout` parameter.
