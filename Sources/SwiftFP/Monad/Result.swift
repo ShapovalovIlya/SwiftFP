@@ -34,12 +34,12 @@ public extension Result {
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
     @discardableResult
-    func asyncFlatMap<NewSuccess>(
-        _ asyncTransform: (Success) async -> Result<NewSuccess, Failure>
+    func flatMap<NewSuccess>(
+        _ transform: (Success) async -> Result<NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         switch self {
         case .success(let success):
-            return await asyncTransform(success)
+            return await transform(success)
             
         case .failure(let failure):
             return .failure(failure)
@@ -52,7 +52,7 @@ public extension Result {
     /// - Returns: A Result instance with the result of evaluating `transformation` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func map<NewSuccess>(
+    func tryMap<NewSuccess>(
         _ transform: (Success) throws -> NewSuccess
     ) -> Result<NewSuccess, Error> {
         switch self {
@@ -69,11 +69,10 @@ public extension Result {
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
-    @discardableResult
-    func asyncMap<NewSuccess>(
+    func map<NewSuccess>(
         _ transform: (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
-        await asyncFlatMap { success in
+        await flatMap { success in
             await .success(transform(success))
         }
     }
@@ -83,7 +82,7 @@ public extension Result {
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func asyncMap<NewSuccess>(
+    func tryMap<NewSuccess>(
         _ transform: (Success) async throws -> NewSuccess
     ) async -> Result<NewSuccess, Error> {
         switch self {
@@ -117,11 +116,11 @@ public extension Result {
     /// If any of given `Result` instances are failure, then produced `Result` will be failure.
     @inlinable
     @discardableResult
-    func asyncApply<NewSuccess>(
+    func apply<NewSuccess>(
         _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
-        await functor.asyncFlatMap { transform in
-            await self.asyncMap(transform)
+        await functor.flatMap { transform in
+            await self.map(transform)
         }
     }
     
@@ -145,7 +144,7 @@ public extension Result where Success == Data {
         _ type: T.Type,
         decoder: JSONDecoder
     ) -> Result<T, Error> {
-        map { try decoder.decode(type.self, from: $0) }
+        tryMap { try decoder.decode(type.self, from: $0) }
     }
 }
 

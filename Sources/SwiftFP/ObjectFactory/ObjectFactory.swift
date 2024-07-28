@@ -1,9 +1,7 @@
 //
 //  ObjectFactory.swift
-//  Messanger
 //
 //  Created by Шаповалов Илья on 22.07.2024.
-//  Copyright © 2024 insystem. All rights reserved.
 //
 
 import Foundation

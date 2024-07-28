@@ -15,7 +15,7 @@ final class ResultTests: XCTestCase {
     func test_asyncFlatMap_Success() async {
         let sut = await Sut
             .success(1)
-            .asyncFlatMap(asyncAddOneSuccess(_:))
+            .flatMap(asyncAddOneSuccess(_:))
         
         switch sut {
         case .success(let success):
@@ -28,7 +28,7 @@ final class ResultTests: XCTestCase {
     func test_asyncFlatMap_Fail() async {
         let sut = await Sut
             .success(1)
-            .asyncFlatMap(asyncAddOneFailure(_:))
+            .flatMap(asyncAddOneFailure(_:))
         
         switch sut {
         case .success: XCTFail()
@@ -42,7 +42,7 @@ final class ResultTests: XCTestCase {
     func test_asyncMap() async {
         let sut = await Sut
             .success(1)
-            .asyncMap(asyncAddOne(_:))
+            .map(asyncAddOne(_:))
         
         switch sut {
         case .success(let success):
@@ -68,7 +68,7 @@ final class ResultTests: XCTestCase {
     func test_tryMap_fail() {
         let sut = Sut
             .success(1)
-            .map(throwError(_:))
+            .tryMap(throwError(_:))
         
         switch sut {
         case .success: XCTFail()
@@ -81,7 +81,7 @@ final class ResultTests: XCTestCase {
     func test_asyncTryMap_success() async {
         let sut = await Sut
             .success(1)
-            .asyncMap(asyncAddOne)
+            .map(asyncAddOne)
         
         switch sut {
         case .success(let success):
@@ -94,7 +94,7 @@ final class ResultTests: XCTestCase {
     func test_asyncTryMap_fail() async {
         let sut = await Sut
             .success(1)
-            .asyncMap(asyncThrowError)
+            .tryMap(asyncThrowError)
         
         switch sut {
         case .success: XCTFail()
@@ -131,7 +131,7 @@ final class ResultTests: XCTestCase {
     
     func test_asyncApply_success() async {
         let functor = Result<@Sendable (Int) async -> Int, Error>.success(asyncAddOne(_:))
-        let sut = await Sut.success(1).asyncApply(functor)
+        let sut = await Sut.success(1).apply(functor)
         
         switch sut {
         case .success(let success):
@@ -143,7 +143,7 @@ final class ResultTests: XCTestCase {
     
     func test_asyncApply_fail() async {
         let functor = Result<@Sendable (Int) async -> Int, Error>.success(asyncAddOne(_:))
-        let sut = await Sut.failure(TestFail()).asyncApply(functor)
+        let sut = await Sut.failure(TestFail()).apply(functor)
         
         switch sut {
         case .success: XCTFail()
