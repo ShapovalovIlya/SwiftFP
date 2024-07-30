@@ -34,7 +34,7 @@ public extension Result {
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
     @discardableResult
-    func flatMap<NewSuccess>(
+    func asyncFlatMap<NewSuccess>(
         _ transform: (Success) async -> Result<NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         switch self {
@@ -69,10 +69,10 @@ public extension Result {
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func map<NewSuccess>(
+    func asyncMap<NewSuccess>(
         _ transform: (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
-        await flatMap { success in
+        await asyncFlatMap { success in
             await .success(transform(success))
         }
     }
@@ -82,7 +82,7 @@ public extension Result {
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
-    func tryMap<NewSuccess>(
+    func asyncTryMap<NewSuccess>(
         _ transform: (Success) async throws -> NewSuccess
     ) async -> Result<NewSuccess, Error> {
         switch self {
@@ -116,11 +116,11 @@ public extension Result {
     /// If any of given `Result` instances are failure, then produced `Result` will be failure.
     @inlinable
     @discardableResult
-    func apply<NewSuccess>(
+    func asyncApply<NewSuccess>(
         _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
-        await functor.flatMap { transform in
-            await self.map(transform)
+        await functor.asyncFlatMap { transform in
+            await self.asyncMap(transform)
         }
     }
     

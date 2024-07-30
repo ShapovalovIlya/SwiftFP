@@ -37,20 +37,20 @@ final class MonadTests: XCTestCase {
     }
     
     func test_asyncMap() async {
-        let sut = await Monad(1).map(addOneAsync(_:))
+        let sut = await Monad(1).asyncMap(addOneAsync(_:))
         
         XCTAssertEqual(sut.value, 2)
     }
     
     func test_asyncFlatMap() async {
-        let sut = await Monad(1).flatMap(addMonadAsync)
+        let sut = await Monad(1).asyncFlatMap(addMonadAsync)
         
         XCTAssertEqual(sut.value, 2)
     }
 
     func test_asyncApply() async {
         let functor = Monad(addOneAsync)
-        let sut = await Monad(1).apply(functor)
+        let sut = await Monad(1).asyncApply(functor)
         
         XCTAssertEqual(sut.value, 2)
     }

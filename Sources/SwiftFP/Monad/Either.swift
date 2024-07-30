@@ -48,7 +48,7 @@ public enum Either<Left, Right> {
     /// - Parameter transform: A closure that takes the `left` value of this instance.
     /// - Returns: A `Either` instance with the result of evaluating `transform` as the new left value if this instance represents a left branch.
     @inlinable
-    public func map<AsyncLeft>(
+    public func asyncMap<AsyncLeft>(
         _ transform: (Left) async throws -> AsyncLeft
     ) async rethrows -> Either<AsyncLeft, Right> {
         try await asyncFlatMap { left in

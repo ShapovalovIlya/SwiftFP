@@ -64,7 +64,7 @@ public struct Monad<Wrapped> {
       - Returns: The asynchronous result of the given closure wrapped in `Monad`.
      */
     @inlinable
-    public func map<U>(
+    public func asyncMap<U>(
         _ transform: (Wrapped) async throws -> U
     ) async rethrows -> Monad<U> {
         Monad<U>(try await transform(value))
@@ -79,7 +79,7 @@ public struct Monad<Wrapped> {
     }
     
     @inlinable
-    public func flatMap<U>(
+    public func asyncFlatMap<U>(
         _ transform: (Wrapped) async throws -> Monad<U>
     ) async rethrows -> Monad<U> {
         try await transform(value)
@@ -105,11 +105,11 @@ public struct Monad<Wrapped> {
     /// - Returns: The result of given function wrapped in `Monad`
     @inlinable
     @discardableResult
-    public func apply<U>(
+    public func asyncApply<U>(
         _ functor: Monad<@Sendable (Wrapped) async -> U>
     ) async -> Monad<U> {
-        await functor.flatMap { transform in
-            await self.map(transform)
+        await functor.asyncFlatMap { transform in
+            await self.asyncMap(transform)
         }
     }
     
