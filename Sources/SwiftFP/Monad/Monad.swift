@@ -131,6 +131,15 @@ public struct Monad<Wrapped> {
     public func reduce<T>(_ body: (Wrapped) throws -> T) rethrows -> T {
         try body(self.value)
     }
+    
+    /// Returns the result of the given closure passing wrapped value as parameter.
+    /// - Returns: result of the given closure.
+    @inlinable
+    public func asyncReduce<T>(
+        _ body: (Wrapped) async throws -> T
+    ) async rethrows -> T {
+        try await body(self.value)
+    }
 }
 
 /// Zip two `Monad` instances
