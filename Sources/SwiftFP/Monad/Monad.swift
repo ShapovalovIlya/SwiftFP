@@ -125,6 +125,8 @@ public struct Monad<Wrapped> {
         }
     }
     
+    /// Returns the result of the given closure passing wrapped value as parameter.
+    /// - Returns: result of the given closure.
     @inlinable
     public func reduce<T>(_ body: (Wrapped) throws -> T) rethrows -> T {
         try body(self.value)
