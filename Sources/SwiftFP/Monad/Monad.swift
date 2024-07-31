@@ -124,6 +124,11 @@ public struct Monad<Wrapped> {
             other.map { (wrapped, $0) }
         }
     }
+    
+    @inlinable
+    public func reduce<T>(_ body: (Wrapped) throws -> T) rethrows -> T {
+        try body(self.value)
+    }
 }
 
 /// Zip two `Monad` instances
