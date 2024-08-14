@@ -154,6 +154,7 @@ public func zip<A, B>(_ lhs: Monad<A>, _ rhs: Monad<B>) -> Monad<(A, B)> {
 
 extension Monad: Equatable where Wrapped: Equatable {}
 extension Monad: Sendable where Wrapped: Sendable {}
+extension Monad: Hashable where Wrapped: Hashable {}
 extension Monad: Comparable where Wrapped: Comparable {
     @inlinable
     public static func < (lhs: Monad<Wrapped>, rhs: Monad<Wrapped>) -> Bool {
