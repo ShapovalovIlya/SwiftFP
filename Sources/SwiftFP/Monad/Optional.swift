@@ -82,6 +82,14 @@ public extension Optional {
     ) rethrows -> Wrapped? {
         try flatMap { try condition($0) ? $0 : nil }
     }
+    
+    /// Evaluates given closure, passing current state as parameter.
+    /// - Parameter body: A closure that takes current state of the instance
+    /// - Returns: result of execution as new type.
+    @inlinable
+    func reduce<T>(_ body: (Wrapped?) throws -> T) rethrows -> T {
+        try body(self)
+    }
 }
 
 /// Zip two optional values.
@@ -90,6 +98,4 @@ public extension Optional {
 ///   - rhs: second optional value to combine
 /// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
 @inlinable
-public func zip<A, B>(_ lhs: A?, _ rhs: B?) -> (A, B)? {
-    lhs.zip(rhs)
-}
+public func zip<A, B>(_ lhs: A?, _ rhs: B?) -> (A, B)? { lhs.zip(rhs) }

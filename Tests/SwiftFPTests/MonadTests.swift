@@ -6,7 +6,24 @@
 //
 
 import XCTest
+import Testing
 @testable import SwiftFP
+
+@Suite("Monad tests")
+struct MonadTestsSuite {
+    @Test func reduce() async throws {
+        let val = 1
+        let sut = Monad(val).reduce(\.description)
+        
+        #expect(sut == val.description)
+    }
+    
+    @Test func asyncReduce() async throws {
+        let sut = await Monad(1).asyncReduce(addOneAsync)
+        
+        #expect(sut == 2)
+    }
+}
 
 final class MonadTests: XCTestCase {
     func test_map() {
@@ -73,8 +90,6 @@ final class MonadTests: XCTestCase {
     }
 }
 
-private extension MonadTests {
-    func addOne(_ val: Int) -> Int { val + 1 }
-    @Sendable func addOneAsync(_ val: Int) async -> Int { val + 1 }
-    func addMonadAsync(_ val: Int) async -> Monad<Int> { Monad(val + 1) }
-}
+private func addOne(_ val: Int) -> Int { val + 1 }
+@Sendable private func addOneAsync(_ val: Int) async -> Int { val + 1 }
+private func addMonadAsync(_ val: Int) async -> Monad<Int> { Monad(val + 1) }

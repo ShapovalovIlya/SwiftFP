@@ -21,7 +21,15 @@ struct OptionalTestNew {
         : #expect(sut == nil)
     }
     
-    
+    @Test(arguments: [1, nil])
+    func reduce(state: Int?) async throws {
+        let result = state.reduce { $0 == nil }
+        
+        switch state {
+        case .some: #expect(!result)
+        case .none: #expect(result)
+        }
+    }
 }
 
 final class OptionalTests: XCTestCase {

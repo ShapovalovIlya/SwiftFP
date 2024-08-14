@@ -49,6 +49,20 @@ struct EitherTestsSuite {
             #expect(sut == .right(string.capitalized))
         }
     }
+    
+    @Test func leftSubscript() async throws {
+        let sut = Sut.left(1)
+        
+        #expect(sut[left: \.description] == 1.description)
+        #expect(sut[right: \.first] == nil)
+    }
+    
+    @Test func rightSubscript() async throws {
+        let sut = Sut.right("baz")
+        
+        #expect(sut[left: \.description] == nil)
+        #expect(sut[right: \.first] == "b")
+    }
 }
 
 final class EitherTests: XCTestCase {

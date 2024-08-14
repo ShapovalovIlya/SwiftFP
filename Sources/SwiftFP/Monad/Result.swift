@@ -160,6 +160,4 @@ extension Result: Sendable where Success: Sendable, Failure: Sendable {}
 public func zip<Success1, Success2>(
     _ lhs: Result<Success1, Error>,
     _ rhs: Result<Success2, Error>
-) -> Result<(Success1, Success2), Error> {
-    lhs.zip(rhs)
-}
+) -> Result<(Success1, Success2), Error> { lhs.zip(rhs) }
