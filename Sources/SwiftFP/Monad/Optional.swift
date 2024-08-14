@@ -13,14 +13,14 @@ public extension Optional {
     /// - Returns: The result of the given closure. If this instance is nil, returns nil.
     @inlinable
     func asyncFlatMap<U>(
-        _ asyncTransform: (Wrapped) async throws -> U?
+        _ transform: (Wrapped) async throws -> U?
     ) async rethrows -> U? {
         switch self {
         case .none:
             return .none
             
         case .some(let wrapped):
-            return try await asyncTransform(wrapped)
+            return try await transform(wrapped)
         }
     }
     
@@ -30,9 +30,9 @@ public extension Optional {
     @inlinable
     @discardableResult
     func asyncMap<U>(
-        _ asyncTransform: (Wrapped) async throws -> U
+        _ transform: (Wrapped) async throws -> U
     ) async rethrows -> U? {
-        try await asyncFlatMap(asyncTransform)
+        try await asyncFlatMap(transform)
     }
     
     /// Evaluates given  function when both `Optional` instances of function and value are not `nil`,
@@ -56,9 +56,9 @@ public extension Optional {
     @inlinable
     @discardableResult
     func asyncApply<NewWrapped>(
-        _ asyncFunctor: Optional<@Sendable (Wrapped) async throws -> NewWrapped>
+        _ functor: Optional<@Sendable (Wrapped) async throws -> NewWrapped>
     ) async rethrows -> Optional<NewWrapped> {
-        try await asyncFunctor.asyncFlatMap { transform in
+        try await functor.asyncFlatMap { transform in
             try await self.asyncMap(transform)
         }
     }

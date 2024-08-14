@@ -6,7 +6,15 @@
 //
 
 import XCTest
+import Testing
 import SwiftFP
+
+@Suite("Result tests")
+struct ResultTestsNew {
+    typealias Sut = Result<Int, Error>
+    
+    
+}
 
 final class ResultTests: XCTestCase {
     typealias Sut = Result<Int, Error>

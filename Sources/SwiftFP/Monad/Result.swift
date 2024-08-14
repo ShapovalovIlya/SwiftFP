@@ -136,6 +136,11 @@ public extension Result {
             other.map { (success, $0) }
         }
     }
+    
+    @inlinable
+    func reduce<T>(_ body: (Self) throws -> T) rethrows -> T {
+        try body(self)
+    }
 }
 
 public extension Result where Success == Data {
