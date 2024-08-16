@@ -1,5 +1,5 @@
 //
-//  KeyPathExtensions.swift
+//  KeyPathOperators.swift
 //  Messanger
 //
 //  Created by Шаповалов Илья on 24.07.2024.
