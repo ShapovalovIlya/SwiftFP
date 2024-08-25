@@ -8,12 +8,14 @@
 import Foundation
 
 public extension Dictionary {
+    @inlinable
     init(@Array<(Key, Value)>.Builder _ build: () -> [(Key, Value)]) {
         self.init(build(), uniquingKeysWith: { $1 })
     }
 }
 
 public extension Set {
+    @inlinable
     init(@Array<Element>.Builder _ build: () -> [Element]) {
         self = Set(build())
     }
@@ -21,6 +23,7 @@ public extension Set {
 
 public extension Array {
     //MARK: - init(_:)
+    @inlinable
     init(@Builder _ build: () throws -> [Element]) rethrows { self = try build() }
     
     //MARK: - Builder

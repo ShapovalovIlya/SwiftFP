@@ -11,9 +11,10 @@ import SwiftFP
 @Suite("Tests for array builder")
 struct ArrayBuilderTests {
 
+    //MARK: - Array
     @Test
-    func createFromElements() async throws {
-        let sut = Array<Int> {
+    func createArrayFromElements() async throws {
+        let sut = Array {
             1
             2
             3
@@ -23,8 +24,8 @@ struct ArrayBuilderTests {
     }
     
     @Test(arguments: [true, false])
-    func createWithIfBranch(condition: Bool) async throws {
-        let sut = Array<Int> {
+    func createArrayWithIfBranch(condition: Bool) async throws {
+        let sut = Array {
             1
             if condition {
                 2
@@ -36,8 +37,8 @@ struct ArrayBuilderTests {
     }
 
     @Test(arguments: [true, false])
-    func createWithIfElseBranch(condition: Bool) async throws {
-        let sut = Array<Int> {
+    func createArrayWithIfElseBranch(condition: Bool) async throws {
+        let sut = Array {
             1
             if condition {
                 2
@@ -52,8 +53,8 @@ struct ArrayBuilderTests {
     
     
     @Test(arguments: [true, false])
-    func createWithSwitch(condition: Bool) async throws {
-        let sut = Array<Int> {
+    func createArrayWithSwitch(condition: Bool) async throws {
+        let sut = Array {
             1
             switch condition {
             case true: 2
@@ -66,8 +67,8 @@ struct ArrayBuilderTests {
     }
     
     @Test
-    func createWithArray() async throws {
-        let sut = Array<Int> {
+    func createArrayWithArray() async throws {
+        let sut = Array {
             1
             [2]
         }
@@ -76,8 +77,8 @@ struct ArrayBuilderTests {
     }
     
     @Test
-    func createWithVoidExpression() async throws {
-        let sut = try Array<Int> {
+    func createArrayWithVoidExpression() async throws {
+        let sut = try Array {
             1
             try #require(true)
         }
@@ -85,4 +86,13 @@ struct ArrayBuilderTests {
         #expect(sut == [1])
     }
     
+    //MARK: - Dictionary
+    @Test
+    func createDictWithPairs() async throws {
+        let sut = Dictionary {
+            ("baz", 1)
+        }
+        
+        #expect(sut == ["baz": 1])
+    }
 }
