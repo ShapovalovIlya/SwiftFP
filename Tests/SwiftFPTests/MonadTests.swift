@@ -11,17 +11,33 @@ import Testing
 
 @Suite("Monad tests")
 struct MonadTestsSuite {
-    @Test func reduce() async throws {
+    @Test
+    func reduce() async throws {
         let val = 1
         let sut = Monad(val).reduce(\.description)
         
         #expect(sut == val.description)
     }
     
-    @Test func asyncReduce() async throws {
+    @Test
+    func asyncReduce() async throws {
         let sut = await Monad(1).asyncReduce(addOneAsync)
         
         #expect(sut == 2)
+    }
+    
+    @Test
+    func callAsFunction() async throws {
+        let sut = Monad({ 1 })
+        
+        #expect(sut() == 1)
+    }
+    
+    @Test
+    func callAsFunctionWithArguments() async throws {
+        let sut = Monad<(Int) -> Int>({ $0 + 1 })
+        
+        #expect(sut(1) == 2)
     }
 }
 

@@ -17,7 +17,7 @@ public struct Monad<Wrapped> {
     /// Creates an instance that stores the given value.
     @inlinable
     public init(_ value: Wrapped) { self.value = value }
-
+    
     //MARK: - subscript
     @inlinable
     public subscript<T>(dynamicMember keyPath: KeyPath<Wrapped, T>) -> T {
@@ -44,6 +44,19 @@ public struct Monad<Wrapped> {
             body(&new)
             return new
         }
+    }
+
+    //MARK: - callAsFunction(_:)
+    @inlinable
+    @discardableResult
+    func callAsFunction<T>() -> T where Wrapped == () -> T { value() }
+    
+    @inlinable
+    @discardableResult
+    func callAsFunction<T, U>(
+        _ argument: T
+    ) -> U where Wrapped == (T) -> U {
+        value(argument)
     }
     
     //MARK: - map(_:)
