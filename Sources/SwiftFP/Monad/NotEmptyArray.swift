@@ -27,17 +27,8 @@ public struct NotEmptyArray<Element> {
     //MARK: - Methods
     public var array: [Element] { CollectionOfOne(head) + tail }
     
-    //MARK: - Reduce
     @inlinable
-    public func reduce<Result>(
-        into initial: Result,
-        updateAccumulatingResult: (inout Result, Element) throws -> Void
-    ) rethrows -> Result {
-        try array.reduce(into: initial, updateAccumulatingResult)
-    }
-    
-    @inlinable
-    public func map<T>(
+    public func mapNotEmpty<T>(
         _ transform: (Element) throws -> T
     ) rethrows -> NotEmptyArray<T> {
         NotEmptyArray<T>(
@@ -51,7 +42,7 @@ public struct NotEmptyArray<Element> {
 
 //MARK: - Sequence
 extension NotEmptyArray: Sequence {
-    public func makeIterator() -> some IteratorProtocol {
+    public func makeIterator() -> IndexingIterator<[Element]> {
         array.makeIterator()
     }
 }

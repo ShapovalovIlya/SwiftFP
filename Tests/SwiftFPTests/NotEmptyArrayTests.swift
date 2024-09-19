@@ -41,7 +41,8 @@ struct NotEmptyArrayTests {
     
     @Test
     func map() async throws {
-        let sut = try #require(NotEmptyArray([0,1,2])).map { $0 + 1 }
+        let sut = try #require(NotEmptyArray([0,1,2]))
+            .mapNotEmpty { $0 + 1 }
         
         #expect(sut.head == 1)
         #expect(sut.tail == [2,3])
