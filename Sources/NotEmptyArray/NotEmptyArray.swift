@@ -37,7 +37,16 @@ public struct NotEmptyArray<Element> {
         )
     }
     
+    public mutating func append(contentsOf other: Self) {
+        tail.append(contentsOf: other.array)
+    }
     
+    @inlinable
+    public static func + (lhs: Self, rhs: Self) -> Self {
+        var result = lhs
+        result.append(contentsOf: rhs)
+        return result
+    }
 }
 
 //MARK: - Sequence
