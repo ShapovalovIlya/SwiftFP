@@ -49,11 +49,11 @@ public struct Monad<Wrapped> {
     //MARK: - callAsFunction(_:)
     @inlinable
     @discardableResult
-    func callAsFunction<T>() -> T where Wrapped == () -> T { value() }
+    public func callAsFunction<T>() -> T where Wrapped == () -> T { value() }
     
     @inlinable
     @discardableResult
-    func callAsFunction<T, U>(
+    public func callAsFunction<T, U>(
         _ argument: T
     ) -> U where Wrapped == (T) -> U {
         value(argument)

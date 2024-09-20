@@ -20,12 +20,14 @@ public enum Either<Left, Right> {
     }
     
     //MARK: - subscrips
-    subscript<T>(left keyPath: KeyPath<Left, T>) -> T? {
+    @inlinable
+    public subscript<T>(left keyPath: KeyPath<Left, T>) -> T? {
         if case .left(let left) = self { return left[keyPath: keyPath] }
         return nil
     }
     
-    subscript<T>(right keyPath: KeyPath<Right, T>) -> T? {
+    @inlinable
+    public subscript<T>(right keyPath: KeyPath<Right, T>) -> T? {
         if case .right(let right) = self { return right[keyPath: keyPath] }
         return nil
     }

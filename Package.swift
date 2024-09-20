@@ -10,10 +10,28 @@ let package = Package(
         .macOS(.v10_15)
     ],
     products: [
-        .library(name: "SwiftFP", targets: ["SwiftFP"]),
+        .library(
+            name: "SwiftFP",
+            targets: [
+                "SwiftFP",
+                "Either",
+                "Monad"
+            ]
+        ),
+        .library(name: "Either", targets: ["Either"]),
+        .library(name: "Monad", targets: ["Monad"]),
     ],
     targets: [
         .target(name: "SwiftFP"),
-        .testTarget(name: "SwiftFPTests", dependencies: ["SwiftFP"]),
+        .target(name: "Either"),
+        .target(name: "Monad"),
+        .testTarget(
+            name: "SwiftFPTests",
+            dependencies: [
+                "SwiftFP",
+                "Either",
+                "Monad"
+            ]
+        ),
     ]
 )
