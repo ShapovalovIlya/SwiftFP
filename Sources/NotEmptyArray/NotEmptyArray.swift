@@ -46,3 +46,5 @@ extension NotEmptyArray: Sequence {
         array.makeIterator()
     }
 }
+
+extension NotEmptyArray: Equatable where Element: Equatable {}
