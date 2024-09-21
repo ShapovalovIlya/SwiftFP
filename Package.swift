@@ -14,6 +14,7 @@ let package = Package(
         .library(name: "Monad", targets: ["Monad"]),
         .library(name: "NotEmptyArray", targets: ["NotEmptyArray"]),
         .library(name: "Validated", targets: ["Validated"]),
+        .library(name: "Zipper", targets: ["Zipper"]),
         .library(
             name: "SwiftFP",
             targets: [
@@ -21,23 +22,26 @@ let package = Package(
                 "Either",
                 "Monad",
                 "NotEmptyArray",
-                "Validated"
+                "Validated",
+                "Zipper"
             ]
         ),
     ],
     targets: [
+        .target(name: "Either"),
+        .target(name: "Monad"),
+        .target(name: "NotEmptyArray"),
+        .target(name: "Zipper"),
         .target(
             name: "SwiftFP",
             dependencies: [
                 "Either",
                 "Monad",
                 "NotEmptyArray",
-                "Validated"
+                "Validated",
+                "Zipper"
             ]
         ),
-        .target(name: "Either"),
-        .target(name: "Monad"),
-        .target(name: "NotEmptyArray"),
         .target(name: "Validated", dependencies: ["NotEmptyArray"]),
         .testTarget(
             name: "SwiftFPTests",

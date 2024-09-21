@@ -261,7 +261,7 @@ struct ValidatedTests {
     @Test
     func accumulateValidations() async throws {
         let sut = Sut(1).validate { wrapped in
-            Sut(4)
+            Sut(wrapped)
             ValidationResult.success(2)
             NotEmptyArray(head: Sut(3), tail: [])
         }
@@ -273,4 +273,5 @@ struct ValidatedTests {
         case .invalid: throw NSError()
         }
     }
+    
 }

@@ -227,18 +227,18 @@ public extension Validated {
 
 //MARK: - Zip global
 @inlinable
-public func zip<V,T,E: Error>(
-    _ lhs: Validated<V, E>,
-    _ rhs: Validated<T, E>
-) -> Validated<(V,T), E> {
+public func zip<A,B,E>(
+    _ lhs: Validated<A, E>,
+    _ rhs: Validated<B, E>
+) -> Validated<(A,B), E> where E: Error {
     lhs.zip(rhs)
 }
 
 @inlinable
-public func zip<V,T,E, R>(
-    _ lhs: Validated<V, E>,
-    _ rhs: Validated<T, E>,
-    using transform: (V, T) -> R
-) -> Validated<R, E> where E: Error {
+public func zip<A,B,C,E>(
+    _ lhs: Validated<A, E>,
+    _ rhs: Validated<B, E>,
+    using transform: (A, B) -> C
+) -> Validated<C, E> where E: Error {
     lhs.zip(rhs, using: transform)
 }
