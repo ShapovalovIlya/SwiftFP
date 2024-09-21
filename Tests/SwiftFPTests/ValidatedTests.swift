@@ -11,6 +11,8 @@ import Foundation
 
 struct ValidatedTests {
     typealias Sut = Validated<Int, StubError>
+    typealias ValidationResult = Result<Int, StubError>
+    
     private static let arguments = [
         Sut(1),
         Sut.failed(.one)
@@ -18,15 +20,20 @@ struct ValidatedTests {
     
     enum StubError: Error, Equatable {
         case one
+        case two
     }
     
     enum MappedError: Error, Equatable {
         case one
+        case two
         
         init(stub: StubError) {
             switch stub {
             case .one:
                 self = .one
+                
+            case .two:
+                self = .two
             }
         }
     }
@@ -64,6 +71,24 @@ struct ValidatedTests {
         switch sut {
         case .valid: throw NSError()
         case .invalid(let errors): #expect(errors.head is StubError)
+        }
+    }
+    
+    @Test(arguments: [
+        Result<Int, StubError>.success(1),
+        .failure(.one)
+    ])
+    func initWithResult(_ result: Result<Int, StubError>) async throws {
+        let sut = Validated(result: result)
+        
+        switch (result, sut) {
+        case let (.success(lhs) ,.valid(rhs)):
+            #expect(lhs == rhs)
+            
+        case let (.failure(lhs), .invalid(rhs)):
+            #expect(rhs.contains(lhs))
+            
+        default: throw NSError()
         }
     }
     
@@ -179,6 +204,73 @@ struct ValidatedTests {
             #expect(lhs == rhs)
         
         default: throw NSError()
+        }
+    }
+    
+    @Test(arguments: arguments)
+    func zipGlobal(_ state: Sut) async throws {
+        let sut = zip(
+            Validated<String, StubError>("1"),
+            state
+        )
+        
+        switch (state, sut) {
+        case let (.valid, .valid(pair)):
+            #expect(pair == ("1", 1))
+            
+        case let (.invalid(lhs), .invalid(rhs)):
+            #expect(lhs == rhs)
+            
+        default: throw NSError()
+        }
+    }
+    
+//    @Test(arguments: [
+//        (Sut(1), Sut(1)),
+//        (Sut(1), Sut.failed(.one)),
+//        (Sut.failed(.one), Sut.failed(.one))
+//    ])
+//    func zipGlobalWithClosure(_ pair: (lhs: Sut, rhs: Sut)) async throws {
+//        let sut = zip(pair.lhs, pair.rhs, using: +)
+//        
+//        switch (pair) {
+//        case let (.valid(lhs), .valid(rhs)):
+//            
+//        }
+//    }
+    
+    @Test
+    func accumulateErrors() async throws {
+        let sut = Sut(1).validate { wrapped in
+            Sut(wrapped)
+            Sut.failed(.one)
+            Sut.failed(.two)
+            ValidationResult.success(2)
+            NotEmptyArray(head: Sut(1), tail: [])
+        }
+        
+        switch sut {
+        case .invalid(let errors):
+            #expect(errors.array == [.one, .two])
+            
+        case .valid:
+            throw NSError()
+        }
+    }
+    
+    @Test
+    func accumulateValidations() async throws {
+        let sut = Sut(1).validate { wrapped in
+            Sut(4)
+            ValidationResult.success(2)
+            NotEmptyArray(head: Sut(3), tail: [])
+        }
+        
+        switch sut {
+        case .valid(let wrapped):
+            #expect(wrapped == 1)
+            
+        case .invalid: throw NSError()
         }
     }
 }
