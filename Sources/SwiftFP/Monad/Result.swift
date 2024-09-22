@@ -7,14 +7,14 @@
 
 import Foundation
 
-public extension Result where Failure == Error {
+public extension Result {
     //MARK: - init(_:)
     
     /// Asynchronously Creates a new result by evaluating a asynchronous throwing closure,
     /// capturing the returned value as a success, or any thrown error as a failure.
     /// - Parameter body: A asynchronous throwing closure to evaluate.
     @inlinable
-    init(asyncCatch body: () async throws -> Success) async {
+    init(asyncCatch body: () async throws(Failure) -> Success) async {
         do {
             let success = try await body()
             self = .success(success)
@@ -23,9 +23,6 @@ public extension Result where Failure == Error {
         }
     }
     
-}
-
-public extension Result {
     //MARK: - flatMap(_:)
     
     /// Returns a new result, asynchronous mapping any success value using the given `transformation`

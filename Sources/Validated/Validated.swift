@@ -19,6 +19,16 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     }
     
     @inlinable
+    public init(catch block: () throws(Failure) -> Wrapped) {
+        do {
+            let value = try block()
+            self = .valid(value)
+        } catch {
+            self = .invalid(NotEmptyArray(head: error, tail: []))
+        }
+    }
+    
+    @inlinable
     public init(result: Result<Wrapped, Failure>) {
         switch result {
         case .success(let success):
@@ -146,19 +156,6 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
         transform(self)
     }
     
-}
-
-//MARK: - Catch init
-public extension Validated where Failure == Error {
-    @inlinable
-    init(catch block: () throws -> Wrapped) {
-        do {
-            let value = try block()
-            self = .valid(value)
-        } catch {
-            self = .invalid(NotEmptyArray(head: error, tail: []))
-        }
-    }
 }
 
 //MARK: - Equatable
