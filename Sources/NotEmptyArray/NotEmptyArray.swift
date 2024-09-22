@@ -57,3 +57,4 @@ extension NotEmptyArray: Sequence {
 }
 
 extension NotEmptyArray: Equatable where Element: Equatable {}
+extension NotEmptyArray: Hashable where Element: Hashable {}

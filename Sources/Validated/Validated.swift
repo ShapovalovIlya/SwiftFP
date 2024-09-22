@@ -122,15 +122,17 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             .map(transform)
     }
     
-    //MARK: - validate(_:)
+    //MARK: - reduce(_:)
     @inlinable
-    public func validate(
-        @Accumulator _ validation: (Wrapped) -> Validated<Wrapped, Failure>
-    ) -> Validated<Wrapped, Failure> {
-        flatMap(validation)
+    public func reduce<T>(
+        _ transform: (Validated<Wrapped, Failure>) -> T
+    ) -> T {
+        transform(self)
     }
+    
 }
 
+//MARK: - Catch init
 public extension Validated where Failure == Error {
     @inlinable
     init(catch block: () throws -> Wrapped) {
@@ -143,7 +145,9 @@ public extension Validated where Failure == Error {
     }
 }
 
-extension Validated: Equatable where Wrapped: Equatable, Failure: Equatable {
+//MARK: - Equatable
+extension Validated: Equatable where Wrapped: Equatable,
+                                     Failure: Equatable {
     @inlinable
     public static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
@@ -158,87 +162,4 @@ extension Validated: Equatable where Wrapped: Equatable, Failure: Equatable {
     }
 }
 
-public extension Validated {
-    //MARK: - Accumulator
-    @resultBuilder
-    enum Accumulator {
-        public typealias Element = Validated
-        
-        @available(*, unavailable)
-        public static func buildOptional(
-            _ component: [Element]?
-        ) -> NotEmptyArray<Element> {
-            fatalError()
-        }
-        
-        @inlinable
-        public static func buildExpression(
-            _ expression: Element
-        ) -> NotEmptyArray<Element> {
-            NotEmptyArray(head: expression, tail: [])
-        }
-        
-        @inlinable
-        public static func buildExpression(
-            _ expression: Result<Wrapped, Failure>
-        ) -> NotEmptyArray<Element> {
-            buildExpression(Validated(result: expression))
-        }
-        
-        public static func buildExpression(
-            _ expression: NotEmptyArray<Element>
-        ) -> NotEmptyArray<Element> {
-            expression
-        }
-               
-        @inlinable
-        public static func buildBlock(
-            _ components: NotEmptyArray<Element>...
-        ) -> NotEmptyArray<Element> {
-            var components = components
-            let initial = components.removeFirst()
-            return components.reduce(into: initial) { $0.append(contentsOf: $1) }
-        }
-    
-        @inlinable
-        public static func buildEither(
-            first component: NotEmptyArray<Element>
-        ) -> NotEmptyArray<Element> {
-            component
-        }
-        
-        @inlinable
-        public static func buildEither(
-            second component: NotEmptyArray<Element>
-        ) -> NotEmptyArray<Element> {
-            component
-        }
-        
-        @inlinable
-        public static func buildFinalResult(
-            _ component: NotEmptyArray<Element>
-        ) -> Element {
-            component.tail.reduce(component.head) { partialResult, element in
-                partialResult.zip(element) { prev, next in prev }
-            }
-        }
-    }
-}
-
-//MARK: - Zip global
-@inlinable
-public func zip<A,B,E>(
-    _ lhs: Validated<A, E>,
-    _ rhs: Validated<B, E>
-) -> Validated<(A,B), E> where E: Error {
-    lhs.zip(rhs)
-}
-
-@inlinable
-public func zip<A,B,C,E>(
-    _ lhs: Validated<A, E>,
-    _ rhs: Validated<B, E>,
-    using transform: (A, B) -> C
-) -> Validated<C, E> where E: Error {
-    lhs.zip(rhs, using: transform)
-}
+extension Validated: Hashable where Wrapped: Hashable, Failure: Hashable {}
