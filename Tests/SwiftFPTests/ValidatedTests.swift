@@ -225,4 +225,61 @@ struct ValidatedTests {
         }
     }
     
+    @Test(arguments: [
+        ValidationResult.success(1),
+        ValidationResult.failure(.one)
+    ])
+    func zipValidWithResult(_ result: ValidationResult) async throws {
+        let sut = Sut(1).zip(result)
+        
+        switch (result, sut) {
+        case let (.success, .valid(pair)):
+            #expect(pair == (1,1))
+            
+        case let (.failure(error), .invalid(errors)):
+            #expect(errors.contains(error))
+            
+        default: throw NSError()
+        }
+    }
+    
+    @Test(arguments: [
+        ValidationResult.success(1),
+        ValidationResult.failure(.one)
+    ])
+    func zipValidWithResultUsingTransform(_ result: ValidationResult) async throws {
+        let sut = Sut(1).zip(result, using: +)
+        
+        switch (result, sut) {
+        case let (.success, .valid(val)):
+            #expect(val == 2)
+            
+        case let (.failure(error), .invalid(errors)):
+            #expect(errors.contains(error))
+            
+        default: throw NSError()
+        }
+    }
+    
+    @Test(arguments: [
+        ValidationResult.success(1),
+        ValidationResult.failure(.two)
+    ])
+    func zipInvalidWithResult(_ result: ValidationResult) async throws {
+        let sut = Sut
+            .failed(.one)
+            .zip(result)
+        
+        switch (result, sut) {
+        case let (.success, .invalid(errors)):
+            #expect(errors == NotEmptyArray(head: .one, tail: []))
+            
+        case let (.failure, .invalid(errors)):
+            #expect(errors.array == [.one, .two])
+            
+        default: throw NSError()
+        }
+    }
+    
+    
 }

@@ -114,14 +114,30 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     }
     
     @inlinable
-    public func zip<Other, Result>(
+    public func zip<Other, Transformed>(
         _ other: Validated<Other, Failure>,
-        using transform: (Wrapped, Other) -> Result
-    ) -> Validated<Result, Failure> {
+        using transform: (Wrapped, Other) -> Transformed
+    ) -> Validated<Transformed, Failure> {
         self.zip(other)
             .map(transform)
     }
     
+    @inlinable
+    public func zip<Other>(
+        _ result: Result<Other, Failure>
+    ) -> Validated<(Wrapped, Other), Failure> {
+        self.zip(Validated<Other, Failure>(result: result))
+    }
+    
+    @inlinable
+    public func zip<Other, Transformed>(
+        _ result: Result<Other, Failure>,
+        using transform: (Wrapped, Other) -> Transformed
+    ) -> Validated<Transformed, Failure> {
+        self.zip(result)
+            .map(transform)
+    }
+        
     //MARK: - reduce(_:)
     @inlinable
     public func reduce<T>(
