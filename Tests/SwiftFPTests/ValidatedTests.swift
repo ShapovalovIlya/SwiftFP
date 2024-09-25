@@ -281,5 +281,42 @@ struct ValidatedTests {
         }
     }
     
+    //MARK: - accumulate
+    @Test func accumulate() async throws {
+        let sut = Sut(1).accumulate { val in
+            Sut(val)
+            ValidationResult.success(val)
+        }
+        
+        switch sut {
+        case .valid(let result): #expect(result == 1)
+        case .invalid: throw TestError()
+        }
+    }
     
+    @Test
+    func accumulateErrors() async throws {
+        let sut = Sut(1).accumulate { _ in
+            Sut(1)
+            ValidationResult.success(1)
+            ValidationResult.failure(.one)
+            Sut.failed(.two)
+        }
+        
+        switch sut {
+        case .valid:
+            throw TestError()
+            
+        case .invalid(let errors):
+            #expect(errors.array == [.one, .two])
+        }
+    }
+    
+    func TestError(_ description: String = "") -> NSError {
+        NSError(
+            domain: "ValidatedTests",
+            code: 101,
+            userInfo: ["reason" : description]
+        )
+    }
 }

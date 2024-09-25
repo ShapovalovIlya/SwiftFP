@@ -156,6 +156,16 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
         transform(self)
     }
     
+    @inlinable
+    public func accumulate(
+        @Accumulator _ accumulated: (Wrapped) -> [Self]
+    ) -> Validated<Wrapped, Failure> {
+        flatMap { wrapped in
+            accumulated(wrapped).reduce(self) { partialResult, next in
+                partialResult.zip(next) { lhs, _ in lhs }
+            }
+        }
+    }
 }
 
 //MARK: - Equatable
@@ -176,3 +186,61 @@ extension Validated: Equatable where Wrapped: Equatable,
 }
 
 extension Validated: Hashable where Wrapped: Hashable, Failure: Hashable {}
+
+public extension Validated {
+    @resultBuilder
+    enum Accumulator {
+        public typealias Element = Validated
+        public typealias ValidationResult = Result<Wrapped, Failure>
+        
+        @inlinable
+        public static func buildExpression(_ expression: Element) -> [Element] {
+            [expression]
+        }
+        
+        @inlinable
+        public static func buildExpression(
+            _ expression: ValidationResult
+        ) -> [Element] {
+            buildExpression(Validated(result: expression))
+        }
+        
+        @inlinable
+        public static func buildExpression(
+            _ expression: [ValidationResult]
+        ) -> [Element] {
+            expression.map(Validated.init(result:))
+        }
+        
+        @inlinable
+        public static func buildExpression(_ expression: [Element]) -> [Element] {
+            expression
+        }
+        
+        @inlinable
+        public static func buildBlock(_ components: Element...) -> [Element] {
+            components
+        }
+        
+        @inlinable
+        public static func buildBlock(_ components: [Element]...) -> [Element] {
+            components.flatMap(\.self)
+        }
+        
+        @inlinable
+        public static func buildOptional(_ component: [Element]?) -> [Element] {
+            component ?? []
+        }
+        
+        @inlinable
+        public static func buildEither(first component: [Element]) -> [Element] {
+            component
+        }
+        
+        @inlinable
+        public static func buildEither(second component: [Element]) -> [Element] {
+            component
+        }
+        
+    }
+}
