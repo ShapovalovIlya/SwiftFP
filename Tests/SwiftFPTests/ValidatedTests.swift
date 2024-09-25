@@ -161,6 +161,37 @@ struct ValidatedTests {
         }
     }
     
+    @Test(arguments: arguments)
+    func asyncFlatMap(_ state: Sut) async throws {
+        let sut = await state.asyncFlatMap(asyncAddOneValidated)
+        
+        switch (state, sut) {
+        case let (.valid, .valid(rhs)):
+            #expect(rhs == 2)
+            
+        case let (.invalid(lhs), .invalid(rhs)):
+            #expect(lhs == rhs)
+            
+        default: throw TestError("Result should reflect initial state.")
+        }
+    }
+    
+    @Test(arguments: arguments)
+    func asyncFlatMapErrors(_ state: Sut) async throws {
+        let sut = await state
+            .asyncFlatMapErrors(asyncMapHeadErrorValidated)
+        
+        switch (state, sut) {
+        case let (.valid(lhs), .valid(rhs)):
+            #expect(lhs == rhs)
+            
+        case let (.invalid(lhs), .invalid(rhs)):
+            #expect(rhs.head == MappedError.one)
+            
+        default: throw TestError()
+        }
+    }
+    
     //MARK: - zip
     @Test(arguments: arguments)
     func zipValid(_ other: Sut) async throws {
@@ -310,6 +341,21 @@ struct ValidatedTests {
         case .invalid(let errors):
             #expect(errors.array == [.one, .two])
         }
+    }
+    
+    //MARK: - Helpers
+    func asyncAddOne(_ val: Int) async -> Int { val + 1 }
+    func asyncAddOneValidated(_ val: Int) async -> Sut {
+        await Validated(asyncAddOne(val))
+    }
+    func asyncMapError(_ error: StubError) async -> MappedError {
+        MappedError(stub: error)
+    }
+    func asyncMapHeadErrorValidated(
+        _ errors: NotEmptyArray<StubError>
+    ) async -> Validated<Int,MappedError> {
+        let error = await asyncMapError(errors.head)
+        return Validated<Int,MappedError>.failed(error)
     }
     
     func TestError(_ description: String = "") -> NSError {

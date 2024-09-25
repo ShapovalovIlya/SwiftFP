@@ -46,14 +46,27 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     
     //MARK: - flatMap(_:)
     @inlinable
-    public func flatMap<NewValue>(
-        _ transform: (Wrapped) -> Validated<NewValue, Failure>
-    ) -> Validated<NewValue, Failure> {
+    public func flatMap<NewWrapped>(
+        _ transform: (Wrapped) -> Validated<NewWrapped, Failure>
+    ) -> Validated<NewWrapped, Failure> {
         switch self {
         case .valid(let value):
             return transform(value)
             
         case .invalid(let errors):
+            return .invalid(errors)
+        }
+    }
+    
+    @inlinable
+    public func asyncFlatMap<NewWrapped>(
+        _ transform: (Wrapped) async -> Validated<NewWrapped, Failure>
+    ) async -> Validated<NewWrapped, Failure> {
+        switch self {
+        case let .valid(wrapped):
+            return await transform(wrapped)
+            
+        case let .invalid(errors):
             return .invalid(errors)
         }
     }
@@ -68,6 +81,19 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             
         case .invalid(let errors):
             return transform(errors)
+        }
+    }
+    
+    @inlinable
+    public func asyncFlatMapErrors<NewFailure>(
+        _ transform: (NotEmptyArray<Failure>) async -> Validated<Wrapped, NewFailure>
+    ) async -> Validated<Wrapped, NewFailure> {
+        switch self {
+        case .valid(let wrapped):
+            return .valid(wrapped)
+            
+        case .invalid(let errors):
+            return await transform(errors)
         }
     }
     

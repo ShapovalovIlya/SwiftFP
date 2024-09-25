@@ -17,3 +17,10 @@ public func >>> <A, B, C>(
 ) -> (A) -> C {
     return { rhs(lhs($0)) }
 }
+
+public func pipe<A,B,C>(
+    _ lhs: @escaping (A) -> B,
+    _ rhs: @escaping (B) -> C
+) -> (A) -> C {
+     lhs >>> rhs
+}
