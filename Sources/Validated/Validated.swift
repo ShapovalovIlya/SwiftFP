@@ -24,7 +24,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             let value = try block()
             self = .valid(value)
         } catch {
-            self = .invalid(NotEmptyArray(head: error, tail: []))
+            self = .invalid(NotEmptyArray(single: error))
         }
     }
     
@@ -41,7 +41,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     
     @inlinable
     public static func failed(_ error: Failure) -> Validated {
-        .invalid(NotEmptyArray(head: error, tail: []))
+        .invalid(NotEmptyArray(single: error))
     }
     
     //MARK: - flatMap(_:)
@@ -108,6 +108,16 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     }
     
     @inlinable
+    public func asyncMap<NewWrapped>(
+        _ transform: (Wrapped) async -> NewWrapped
+    ) async -> Validated<NewWrapped, Failure> {
+        await asyncFlatMap { wrapped in
+            let new = await transform(wrapped)
+            return Validated<NewWrapped, Failure>(new)
+        }
+    }
+    
+    @inlinable
     public func tryMap<NewWrapped>(
         _ transform: (Wrapped) throws -> NewWrapped
     ) -> Validated<NewWrapped, Error> {
@@ -126,6 +136,21 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     ) -> Validated<Wrapped, NewFailure> {
         flatMapErrors { errors in
             Validated<Wrapped, NewFailure>.invalid(errors.mapNotEmpty(transform))
+        }
+    }
+    
+    @inlinable
+    public func asyncMapErrors<NewFailure>(
+        _ transform: (Failure) async -> NewFailure
+    ) async -> Validated<Wrapped, NewFailure> {
+        await asyncFlatMapErrors { errors in
+            let head = await transform(errors.head)
+            var temp = NotEmptyArray(single: head)
+            for error in errors.tail {
+                let mapped = await transform(error)
+                temp.append(mapped)
+            }
+            return Validated<Wrapped, NewFailure>.invalid(temp)
         }
     }
     
@@ -177,9 +202,9 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     //MARK: - reduce(_:)
     @inlinable
     public func reduce<T>(
-        _ transform: (Validated<Wrapped, Failure>) -> T
-    ) -> T {
-        transform(self)
+        _ transform: (Validated<Wrapped, Failure>) throws -> T
+    ) rethrows -> T {
+        try transform(self)
     }
     
     @inlinable

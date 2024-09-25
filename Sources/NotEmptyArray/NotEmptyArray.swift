@@ -19,6 +19,11 @@ public struct NotEmptyArray<Element> {
     }
     
     @inlinable
+    public init(single: Element) {
+        self.init(head: single, tail: [])
+    }
+    
+    @inlinable
     public init?(_ array: [Element]) {
         guard let head = array.first else { return nil }
         self.init(head: head, tail: .init(array.suffix(from: 1)))
@@ -39,6 +44,10 @@ public struct NotEmptyArray<Element> {
     
     public mutating func append(contentsOf other: Self) {
         tail.append(contentsOf: other.array)
+    }
+    
+    public mutating func append(_ element: Element) {
+        tail.append(element)
     }
     
     @inlinable

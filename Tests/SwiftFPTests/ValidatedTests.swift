@@ -107,6 +107,21 @@ struct ValidatedTests {
     }
     
     @Test(arguments: arguments)
+    func asyncMap(_ state: Sut) async throws {
+        let sut = await state.asyncMap(asyncAddOne)
+        
+        switch (state, sut) {
+        case let (.valid, .valid(result)):
+            #expect(result == 2)
+            
+        case let (.invalid(lhs), .invalid(rhs)):
+            #expect(lhs == rhs)
+            
+        default: throw TestError()
+        }
+    }
+    
+    @Test(arguments: arguments)
     func mapErrors(_ state: Sut) async throws {
         let sut = state.mapErrors(MappedError.init)
         
@@ -116,6 +131,21 @@ struct ValidatedTests {
             
         case .invalid:
             #expect(sut == Validated<Int, MappedError>.failed(.one))
+        }
+    }
+    
+    @Test(arguments: arguments)
+    func asyncMapErrors(_ state: Sut) async throws {
+        let sut = await state.asyncMapErrors(asyncMapError)
+        
+        switch (state, sut) {
+        case let (.valid(lhs), .valid(rhs)):
+            #expect(lhs == rhs)
+            
+        case let (.invalid, .invalid(errors)):
+            #expect(errors.array == [.one])
+            
+        default: throw TestError()
         }
     }
     
@@ -185,7 +215,7 @@ struct ValidatedTests {
         case let (.valid(lhs), .valid(rhs)):
             #expect(lhs == rhs)
             
-        case let (.invalid(lhs), .invalid(rhs)):
+        case let (.invalid, .invalid(rhs)):
             #expect(rhs.head == MappedError.one)
             
         default: throw TestError()
