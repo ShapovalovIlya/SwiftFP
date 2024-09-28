@@ -46,7 +46,7 @@ public extension Array {
         
         @inlinable
         public static func buildArray(_ components: [[Element]]) -> [Element] {
-            components.flatMap { $0 }
+            components.flatMap(\.self)
         }
         
         @inlinable

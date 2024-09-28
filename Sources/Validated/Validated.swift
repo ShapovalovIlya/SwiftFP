@@ -236,6 +236,7 @@ extension Validated: Equatable where Wrapped: Equatable,
     }
 }
 
+extension Validated: Sendable where Wrapped: Sendable, Failure: Sendable {}
 extension Validated: Hashable where Wrapped: Hashable, Failure: Hashable {}
 
 public extension Validated {
