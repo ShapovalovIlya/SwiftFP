@@ -33,15 +33,15 @@ public struct NotEmptyArray<Element> {
     public var array: [Element] { CollectionOfOne(head) + tail }
     
     @inlinable
-    public func mapNotEmpty<T>(
-        _ transform: (Element) throws -> T
-    ) rethrows -> NotEmptyArray<T> {
+    public func mapNotEmpty<T, E>(
+        _ transform: (Element) throws(E) -> T
+    ) rethrows -> NotEmptyArray<T> where E: Error {
         NotEmptyArray<T>(
             head: try transform(head),
             tail: try tail.map(transform)
         )
     }
-    
+        
     public mutating func append(contentsOf other: Self) {
         tail.append(contentsOf: other.array)
     }

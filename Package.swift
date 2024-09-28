@@ -1,5 +1,4 @@
 // swift-tools-version: 5.8
-// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -32,14 +31,19 @@ let package = Package(
         .target(
             name: "Either",
             swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
+                .enableExperimentalFeature("StrictConcurrency")
             ]
         ),
-        .target(name: "Monad"),
+        .target(
+            name: "Monad",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
+        ),
         .target(
             name: "NotEmptyArray",
             swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
+                .enableExperimentalFeature("StrictConcurrency")
             ]
         ),
         .target(name: "Zipper"),
@@ -53,7 +57,15 @@ let package = Package(
                 "Zipper"
             ]
         ),
-        .target(name: "Validated", dependencies: ["NotEmptyArray"]),
+        .target(
+            name: "Validated",
+            dependencies: [
+                "NotEmptyArray"
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
+        ),
         .testTarget(
             name: "SwiftFPTests",
             dependencies: ["SwiftFP"]

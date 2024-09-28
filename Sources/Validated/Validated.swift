@@ -141,16 +141,10 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     
     @inlinable
     public func asyncMapErrors<NewFailure>(
-        _ transform: (Failure) async -> NewFailure
+        _ transform: (NotEmptyArray<Failure>) async -> NotEmptyArray<NewFailure>
     ) async -> Validated<Wrapped, NewFailure> {
         await asyncFlatMapErrors { errors in
-            let head = await transform(errors.head)
-            var temp = NotEmptyArray(single: head)
-            for error in errors.tail {
-                let mapped = await transform(error)
-                temp.append(mapped)
-            }
-            return Validated<Wrapped, NewFailure>.invalid(temp)
+            await Validated<Wrapped, NewFailure>.invalid(transform(errors))
         }
     }
     

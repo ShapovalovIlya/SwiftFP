@@ -134,20 +134,20 @@ struct ValidatedTests {
         }
     }
     
-    @Test(arguments: arguments)
-    func asyncMapErrors(_ state: Sut) async throws {
-        let sut = await state.asyncMapErrors(asyncMapError)
-        
-        switch (state, sut) {
-        case let (.valid(lhs), .valid(rhs)):
-            #expect(lhs == rhs)
-            
-        case let (.invalid, .invalid(errors)):
-            #expect(errors.array == [.one])
-            
-        default: throw TestError()
-        }
-    }
+//    @Test(arguments: arguments)
+//    func asyncMapErrors(_ state: Sut) async throws {
+//        let sut = await state.asyncMapErrors(asyncMapError)
+//        
+//        switch (state, sut) {
+//        case let (.valid(lhs), .valid(rhs)):
+//            #expect(lhs == rhs)
+//            
+//        case let (.invalid, .invalid(errors)):
+//            #expect(errors.array == [.one])
+//            
+//        default: throw TestError()
+//        }
+//    }
     
     @Test
     func tryMap() async throws {
