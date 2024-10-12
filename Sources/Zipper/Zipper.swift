@@ -8,15 +8,16 @@
 import Foundation
 
 public struct Zipper<Element> {
-    public private(set) var previous: [Element]
-    public private(set) var current: Element
-    public private(set) var next: [Element]
+    @usableFromInline var _previous: [Element]
+    @usableFromInline var _current: Element
+    @usableFromInline var _next: [Element]
     
     //MARK: - init(_:)
+    @inlinable
     public init(previous: [Element], current: Element, next: [Element]) {
-        self.previous = previous
-        self.current = current
-        self.next = next
+        self._previous = previous
+        self._current = current
+        self._next = next
     }
     
     @inlinable
@@ -58,27 +59,31 @@ public struct Zipper<Element> {
     }
     
     //MARK: - Public methods
+    @inlinable public var previous: [Element] { _previous }
+    @inlinable public var current: Element { _current }
+    @inlinable public var next: [Element] { _next }
+    
     @inlinable
     public var count: Int { previous.count + 1 + next.count }
     
     @inlinable
     public var array: [Element] {
-        var temp = previous
-        temp += CollectionOfOne(current)
-        temp += next
+        var temp = _previous
+        temp += CollectionOfOne(_current)
+        temp += _next
         return temp
     }
     
     @inlinable
     public var first: Element {
-        if let first = previous.first { return first }
-        return current
+        if let first = _previous.first { return first }
+        return _current
     }
     
     @inlinable
     public var last: Element {
         if let last = next.last { return last }
-        return current
+        return _current
     }
     
     @inlinable
@@ -86,10 +91,24 @@ public struct Zipper<Element> {
         _ transform: (Element) throws -> T
     ) rethrows -> Zipper<T> {
         try Zipper<T>(
-            previous: previous.map(transform),
-            current: transform(current),
-            next: next.map(transform)
+            previous: _previous.map(transform),
+            current: transform(_current),
+            next: _next.map(transform)
         )
+    }
+    
+    @inlinable
+    public mutating func forward() {
+        if _next.isEmpty { return }
+        _previous.append(_current)
+        _current = _next.removeFirst()
+    }
+    
+    @inlinable
+    public mutating func backward() {
+        if _previous.isEmpty { return }
+        _next.insert(_current, at: _next.startIndex)
+        _current = _previous.removeLast()
     }
 }
 
