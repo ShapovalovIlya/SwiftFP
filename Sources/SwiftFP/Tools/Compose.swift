@@ -6,10 +6,10 @@
 //
 
 public func compose<A,B,C>(
-    _ f: @escaping (A) -> B,
-    _ g: @escaping (B) -> C
+    _ a: @escaping (A) -> B,
+    _ b: @escaping (B) -> C
 ) -> (A) -> C {
-    { g(f($0)) }
+    { b(a($0)) }
 }
 
 public func compose<A,B,C,D>(

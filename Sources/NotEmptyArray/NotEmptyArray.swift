@@ -24,9 +24,14 @@ public struct NotEmptyArray<Element> {
     }
     
     @inlinable
-    public init?(_ array: [Element]) {
-        guard let head = array.first else { return nil }
-        self.init(head: head, tail: .init(array.suffix(from: 1)))
+    public init?<S>(_ sequence: S) where S: Sequence<Element> {
+        var iterator = sequence.makeIterator()
+        guard let head = iterator.next() else { return nil }
+        var tail = [Element]()
+        while let element = iterator.next() {
+            tail.append(element)
+        }
+        self.init(head: head, tail: tail)
     }
     
     //MARK: - Methods
