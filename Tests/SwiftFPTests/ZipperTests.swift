@@ -62,7 +62,8 @@ struct ZipperTestsTests {
         #expect(sut.next == [3])
     }
     
-    @Test func goBackward() async throws {
+    @Test
+    func goBackward() async throws {
         var sut = sut
         sut.forward()
         
@@ -71,5 +72,24 @@ struct ZipperTestsTests {
         #expect(sut.previous.isEmpty)
         #expect(sut.current == 1)
         #expect(sut.next == [2,3])
+    }
+    
+    @Test
+    func appendElement() async throws {
+        var sut = sut
+        
+        sut.append(4)
+        
+        #expect(sut.last == 4)
+    }
+    
+    @Test
+    func appendContent() async throws {
+        var sut = sut
+        let appended = [4,5]
+        
+        sut.append(contentsOf: appended)
+        
+        #expect(sut.next.contains(appended))
     }
 }

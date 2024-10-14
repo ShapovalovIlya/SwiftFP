@@ -82,7 +82,7 @@ public struct Zipper<Element> {
     
     @inlinable
     public var last: Element {
-        if let last = next.last { return last }
+        if let last = _next.last { return last }
         return _current
     }
     
@@ -109,6 +109,18 @@ public struct Zipper<Element> {
         if _previous.isEmpty { return }
         _next.insert(_current, at: _next.startIndex)
         _current = _previous.removeLast()
+    }
+    
+    @inlinable
+    public mutating func append(_ newElement: Element) {
+        _next.append(newElement)
+    }
+    
+    @inlinable
+    public mutating func append(
+        contentsOf sequence: some Sequence<Element>
+    ) {
+        _next.append(contentsOf: sequence)
     }
 }
 
