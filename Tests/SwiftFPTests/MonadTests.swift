@@ -49,9 +49,9 @@ final class MonadTests: XCTestCase {
         let result2 = result.map { $0 + 2 }
         let result3 = result2.map { $0 + 3 }
         
-        XCTAssertEqual(result.value, 2)
-        XCTAssertEqual(result2.value, 4)
-        XCTAssertEqual(result3.value, 7)
+        XCTAssertEqual(result.wrapped, 2)
+        XCTAssertEqual(result2.wrapped, 4)
+        XCTAssertEqual(result3.wrapped, 7)
     }
     
     func test_flatMap() {
@@ -59,33 +59,33 @@ final class MonadTests: XCTestCase {
         
         let result = sut.flatMap { Monad($0 + 1) }
        
-        XCTAssertEqual(result.value, 2)
+        XCTAssertEqual(result.wrapped, 2)
     }
     
     func test_apply() {
         let functor = Monad(addOne)
         let sut = Monad(1).apply(functor)
         
-        XCTAssertEqual(sut.value, 2)
+        XCTAssertEqual(sut.wrapped, 2)
     }
     
     func test_asyncMap() async {
         let sut = await Monad(1).asyncMap(addOneAsync(_:))
         
-        XCTAssertEqual(sut.value, 2)
+        XCTAssertEqual(sut.wrapped, 2)
     }
     
     func test_asyncFlatMap() async {
         let sut = await Monad(1).asyncFlatMap(addMonadAsync)
         
-        XCTAssertEqual(sut.value, 2)
+        XCTAssertEqual(sut.wrapped, 2)
     }
 
     func test_asyncApply() async {
         let functor = Monad(addOneAsync)
         let sut = await Monad(1).asyncApply(functor)
         
-        XCTAssertEqual(sut.value, 2)
+        XCTAssertEqual(sut.wrapped, 2)
     }
     
     func test_zip() {

@@ -11,17 +11,17 @@ import Foundation
 @frozen
 @dynamicMemberLookup
 public struct Monad<Wrapped> {
-    public let value: Wrapped
+    public let wrapped: Wrapped
     
     //MARK: - init(_:)
     /// Creates an instance that stores the given value.
     @inlinable
-    public init(_ value: Wrapped) { self.value = value }
+    public init(_ value: Wrapped) { self.wrapped = value }
     
     //MARK: - subscript
     @inlinable
     public subscript<T>(dynamicMember keyPath: KeyPath<Wrapped, T>) -> T {
-        value[keyPath: keyPath]
+        wrapped[keyPath: keyPath]
     }
     
     @inlinable
@@ -29,7 +29,7 @@ public struct Monad<Wrapped> {
         dynamicMember keyPath: WritableKeyPath<Wrapped, T>
     ) -> (T) -> Self {
         { newValue in
-            var new = value
+            var new = wrapped
             new[keyPath: keyPath] = newValue
             return Monad(new)
         }
@@ -49,14 +49,14 @@ public struct Monad<Wrapped> {
     //MARK: - callAsFunction(_:)
     @inlinable
     @discardableResult
-    public func callAsFunction<T>() -> T where Wrapped == () -> T { value() }
+    public func callAsFunction<T>() -> T where Wrapped == () -> T { wrapped() }
     
     @inlinable
     @discardableResult
     public func callAsFunction<T, U>(
         _ argument: T
     ) -> U where Wrapped == (T) -> U {
-        value(argument)
+        wrapped(argument)
     }
     
     //MARK: - map(_:)
@@ -68,7 +68,7 @@ public struct Monad<Wrapped> {
     public func map<U>(
         _ transform: (Wrapped) throws -> U
     ) rethrows -> Monad<U> {
-        Monad<U>(try transform(value))
+        Monad<U>(try transform(wrapped))
     }
     
     /**
@@ -80,7 +80,7 @@ public struct Monad<Wrapped> {
     public func asyncMap<U>(
         _ transform: (Wrapped) async throws -> U
     ) async rethrows -> Monad<U> {
-        Monad<U>(try await transform(value))
+        Monad<U>(try await transform(wrapped))
     }
     
     //MARK: - flatMap(_:)
@@ -88,14 +88,14 @@ public struct Monad<Wrapped> {
     public func flatMap<U>(
         _ transform: (Wrapped) throws -> Monad<U>
     ) rethrows -> Monad<U> {
-        try transform(value)
+        try transform(wrapped)
     }
     
     @inlinable
     public func asyncFlatMap<U>(
         _ transform: (Wrapped) async throws -> Monad<U>
     ) async rethrows -> Monad<U> {
-        try await transform(value)
+        try await transform(wrapped)
     }
     
     //MARK: - apply(_:)
@@ -142,7 +142,7 @@ public struct Monad<Wrapped> {
     /// - Returns: result of the given closure.
     @inlinable
     public func reduce<T>(_ body: (Wrapped) throws -> T) rethrows -> T {
-        try body(self.value)
+        try body(self.wrapped)
     }
     
     /// Returns the result of the given closure passing wrapped value as parameter.
@@ -151,7 +151,7 @@ public struct Monad<Wrapped> {
     public func asyncReduce<T>(
         _ body: (Wrapped) async throws -> T
     ) async rethrows -> T {
-        try await body(self.value)
+        try await body(self.wrapped)
     }
 }
 
@@ -171,6 +171,6 @@ extension Monad: Hashable where Wrapped: Hashable {}
 extension Monad: Comparable where Wrapped: Comparable {
     @inlinable
     public static func < (lhs: Monad<Wrapped>, rhs: Monad<Wrapped>) -> Bool {
-        lhs.value < rhs.value
+        lhs.wrapped < rhs.wrapped
     }
 }
