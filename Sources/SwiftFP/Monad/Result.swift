@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Either
 
 public extension Result {
     //MARK: - init(_:)
@@ -137,6 +138,14 @@ public extension Result {
     @inlinable
     func reduce<T>(_ body: (Self) throws -> T) rethrows -> T {
         try body(self)
+    }
+    
+    @inlinable
+    func either() -> Either<Success, Failure> {
+        switch self {
+        case .success(let success): return .left(success)
+        case .failure(let failure): return .right(failure)
+        }
     }
 }
 

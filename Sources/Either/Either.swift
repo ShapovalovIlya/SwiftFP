@@ -171,5 +171,25 @@ extension Either where Left == Right {
     }
 }
 
+extension Either where Left: Error {
+    @inlinable
+    func result() -> Result<Right, Left> {
+        switch self {
+        case .left(let left): return .failure(left)
+        case .right(let right): return .success(right)
+        }
+    }
+}
+
+extension Either where Right: Error {
+    @inlinable
+    func result() -> Result<Left, Right> {
+        switch self {
+        case .left(let left): return .success(left)
+        case .right(let right): return .failure(right)
+        }
+    }
+}
+
 extension Either: Equatable where Left: Equatable, Right: Equatable {}
 extension Either: Sendable where Left: Sendable, Right: Sendable {}
