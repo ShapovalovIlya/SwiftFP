@@ -131,6 +131,29 @@ extension Zipper: Sequence {
     }
 }
 
-extension Zipper: Equatable where Element: Equatable {}
+extension Zipper: Equatable where Element: Equatable {
+    @inlinable
+    public mutating func move(to predicate: (Element) -> Bool) {
+        if predicate(_current) { return }
+        if let index = _previous.firstIndex(where: predicate) {
+            let suffIndex = _previous.index(after: index)
+            var suffix = _previous.suffix(from: suffIndex)
+            _previous.removeSubrange(suffIndex..<_previous.endIndex)
+            suffix.append(_current)
+            _current = _previous.remove(at: index)
+            _next.insert(contentsOf: suffix, at: _next.startIndex)
+            return
+        }
+        guard let index = _next.firstIndex(where: predicate) else {
+            return
+        }
+        var prefix = _next.prefix(through: index)
+        if prefix.isEmpty { return }
+        _previous.append(_current)
+        _current = prefix.removeLast()
+        _previous.append(contentsOf: prefix)
+    }
+}
+
 extension Zipper: Hashable where Element: Hashable {}
 extension Zipper: Sendable where Element: Sendable {}

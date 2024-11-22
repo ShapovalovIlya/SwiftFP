@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "NotEmptyArray", targets: ["NotEmptyArray"]),
         .library(name: "Validated", targets: ["Validated"]),
         .library(name: "Zipper", targets: ["Zipper"]),
+        .library(name: "Reader", targets: ["Reader"]),
         .library(
             name: "SwiftFP",
             targets: [
@@ -47,6 +48,7 @@ let package = Package(
             ]
         ),
         .target(name: "Zipper"),
+        .target(name: "Reader"),
         .target(
             name: "SwiftFP",
             dependencies: [
