@@ -56,7 +56,8 @@ let package = Package(
                 "Monad",
                 "NotEmptyArray",
                 "Validated",
-                "Zipper"
+                "Zipper",
+                "Reader"
             ]
         ),
         .target(
