@@ -8,12 +8,34 @@
 import Foundation
 
 /// The Reader is a pattern for returning functions as part of other functions.
-/// That is,`Reader<A, B>` corresponds to a function `(A) -> B`.
+/// That is, `Reader<A,B>` corresponds to a function `(A) -> B`.
+///
+/// `Reader` adopts `callAsFunction` method that is, an instance of `Reader` can be used as function.
+///
+///```swift
+///let countLettersInInt = Reader<Int, String>(\.description).map(\.count)
+///
+///countLettersInInt(1)   // output 1
+///countLettersInInt(10)  // output 2
+///countLettersInInt(100) // output 3
+///```
+///
 public struct Reader<Environment, Result> {
-    public let run: (Environment) -> Result
+    @usableFromInline let run: (Environment) -> Result
     
+    //MARK: - init(_:)
     @inlinable
     public init(_ run: @escaping (Environment) -> Result) { self.run = run }
+    
+    @inlinable
+    public func apply(_ environment: Environment) -> Result {
+        run(environment)
+    }
+    
+    @inlinable
+    public func callAsFunction(_ environment: Environment) -> Result {
+        apply(environment)
+    }
     
     /// Transform `Reader`'s run result, using given closure.
     ///
@@ -34,7 +56,7 @@ public struct Reader<Environment, Result> {
     public func map<NewResult>(
         _ transform: @escaping (Result) -> NewResult
     ) -> Reader<Environment, NewResult> {
-        Reader<Environment, NewResult> { transform(run($0)) }
+        Reader<Environment, NewResult> { transform(apply($0)) }
     }
     
     /// Evaluate given closure and wrap current functor into result `Reader`.
@@ -62,7 +84,7 @@ public struct Reader<Environment, Result> {
         _ transform: @escaping (Result) -> Reader<Environment, NewResult>
     ) -> Reader<Environment, NewResult> {
         Reader<Environment, NewResult> { env in
-            map(transform).run(env).run(env)
+            map(transform).apply(env).apply(env)
         }
     }
     

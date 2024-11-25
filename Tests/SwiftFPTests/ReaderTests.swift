@@ -20,9 +20,9 @@ struct ReaderTests {
     @Test func map() async throws {
         let sut = sut.map(\.count)
         
-        #expect(sut.run(1) == 1)
-        #expect(sut.run(10) == 2)
-        #expect(sut.run(100) == 3)
+        #expect(sut(1) == 1)
+        #expect(sut(10) == 2)
+        #expect(sut(100) == 3)
     }
     
     @Test func flatMap() async throws {
@@ -34,8 +34,8 @@ struct ReaderTests {
             }
         }
         
-        #expect(sut.run(1) == "1 is even: false")
-        #expect(sut.run(2) == "2 is even: true")
+        #expect(sut(1) == "1 is even: false")
+        #expect(sut(2) == "2 is even: true")
     }
     
     @Test func zip() async throws {
@@ -44,8 +44,8 @@ struct ReaderTests {
         
         let sut = first.zip(second)
         
-        #expect(sut.run(1) == ("1", false))
-        #expect(sut.run(2) == ("2", true))
+        #expect(sut(1) == ("1", false))
+        #expect(sut(2) == ("2", true))
     }
     
     @Test func zipInto() async throws {
@@ -58,11 +58,11 @@ struct ReaderTests {
         let second = Reader<Int, Bool>(\.isEven)
         let sut = first.zip(second, into: Model.init)
         
-        let oddModel = sut.run(1)
+        let oddModel = sut(1)
         #expect(oddModel.description == "1")
         #expect(oddModel.isEven == false)
         
-        let eventModel = sut.run(2)
+        let eventModel = sut(2)
         #expect(eventModel.description == "2")
         #expect(eventModel.isEven)
     }
