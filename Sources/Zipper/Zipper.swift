@@ -21,6 +21,11 @@ public struct Zipper<Element> {
     }
     
     @inlinable
+    public init(single: Element) {
+        self.init(previous: [], current: single, next: [])
+    }
+    
+    @inlinable
     public init?<S>(_ sequence: S) where S: Sequence<Element> {
         var iterator = sequence.makeIterator()
         guard let first = iterator.next() else { return nil }
@@ -87,6 +92,12 @@ public struct Zipper<Element> {
     }
     
     @inlinable
+    public var isAtEnd: Bool { _next.isEmpty }
+    
+    @inlinable
+    public var isAtStart: Bool { _previous.isEmpty }
+    
+    @inlinable
     public func mapZipper<T>(
         _ transform: (Element) throws -> T
     ) rethrows -> Zipper<T> {
@@ -122,6 +133,19 @@ public struct Zipper<Element> {
     ) {
         _next.append(contentsOf: sequence)
     }
+    
+    @inlinable
+    public mutating func addBeforeCurrent(
+        contentsOf sequence: some Sequence<Element>
+    ) {
+        _previous.append(contentsOf: sequence)
+    }
+    
+    @inlinable
+    public mutating func addBeforeCurrent(_ newElement: Element) {
+        _previous.append(newElement)
+    }
+
 }
 
 //MARK: - Sequence
