@@ -64,11 +64,20 @@ public struct Zipper<Element> {
     }
     
     //MARK: - Public methods
-    @inlinable public var previous: [Element] { _previous }
-    @inlinable public var current: Element { _current }
-    @inlinable public var next: [Element] { _next }
+    @inlinable
+    @inline(__always)
+    public var previous: [Element] { _previous }
     
     @inlinable
+    @inline(__always)
+    public var current: Element { _current }
+    
+    @inlinable
+    @inline(__always)
+    public var next: [Element] { _next }
+    
+    @inlinable
+    @inline(__always)
     public var count: Int { previous.count + 1 + next.count }
     
     @inlinable
@@ -80,21 +89,25 @@ public struct Zipper<Element> {
     }
     
     @inlinable
+    @inline(__always)
     public var first: Element {
         if let first = _previous.first { return first }
         return _current
     }
     
     @inlinable
+    @inline(__always)
     public var last: Element {
         if let last = _next.last { return last }
         return _current
     }
     
     @inlinable
+    @inline(__always)
     public var isAtEnd: Bool { _next.isEmpty }
     
     @inlinable
+    @inline(__always)
     public var isAtStart: Bool { _previous.isEmpty }
     
     @inlinable

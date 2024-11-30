@@ -15,7 +15,8 @@ let package = Package(
         .library(name: "NotEmptyArray", targets: ["NotEmptyArray"]),
         .library(name: "Validated", targets: ["Validated"]),
         .library(name: "Zipper", targets: ["Zipper"]),
-        .library(name: "Reader", targets: ["Reader"]),
+        .library(name: "Readers", targets: ["Readers"]),
+        .library(name: "Effects", targets: ["Effects"]),
         .library(
             name: "SwiftFP",
             targets: [
@@ -24,7 +25,9 @@ let package = Package(
                 "Monad",
                 "NotEmptyArray",
                 "Validated",
-                "Zipper"
+                "Zipper",
+                "Readers",
+                "Effects"
             ]
         ),
     ],
@@ -48,7 +51,8 @@ let package = Package(
             ]
         ),
         .target(name: "Zipper"),
-        .target(name: "Reader"),
+        .target(name: "Readers"),
+        .target(name: "Effects"),
         .target(
             name: "SwiftFP",
             dependencies: [
@@ -57,7 +61,8 @@ let package = Package(
                 "NotEmptyArray",
                 "Validated",
                 "Zipper",
-                "Reader"
+                "Readers",
+                "Effects"
             ]
         ),
         .target(
