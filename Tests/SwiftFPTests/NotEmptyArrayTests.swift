@@ -6,7 +6,7 @@
 //
 
 import Testing
-import NotEmptyArray
+import SwiftFP
 
 struct NotEmptyArrayTests {
     @Test

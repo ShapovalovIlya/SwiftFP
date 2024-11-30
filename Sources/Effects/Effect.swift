@@ -6,3 +6,13 @@
 //
 
 import Foundation
+
+public struct Effect<Value> {
+    @usableFromInline let work: () -> Value
+    
+    @inlinable
+    public init(_ work: @escaping () -> Value) { self.work = work }
+    
+    @inlinable
+    public func run() -> Value { work() }
+}

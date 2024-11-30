@@ -6,7 +6,7 @@
 //
 
 import Testing
-import Validated
+import SwiftFP
 import Foundation
 
 struct ValidatedTests {

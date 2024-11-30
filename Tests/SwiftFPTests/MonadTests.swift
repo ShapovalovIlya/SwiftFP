@@ -7,7 +7,7 @@
 
 import XCTest
 import Testing
-import Monad
+import SwiftFP
 
 @Suite("Monad tests")
 struct MonadTestsSuite {

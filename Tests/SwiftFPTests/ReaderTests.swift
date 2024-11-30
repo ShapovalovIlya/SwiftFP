@@ -8,7 +8,6 @@
 import Foundation
 import Testing
 import SwiftFP
-import Readers
 
 extension Int {
     var isEven: Bool { self % 2 == 0 }

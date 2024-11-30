@@ -6,7 +6,7 @@
 //
 
 import Testing
-import Zipper
+import SwiftFP
 
 struct ZipperTestsTests {
     let sut: Zipper<Int>

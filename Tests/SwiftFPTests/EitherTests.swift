@@ -7,7 +7,7 @@
 
 import XCTest
 import Testing
-import Either
+import SwiftFP
 
 @Suite("Either tests")
 struct EitherTestsSuite {
