@@ -32,6 +32,22 @@ public enum Either<Left, Right> {
         return nil
     }
     
+    @inlinable
+    public func joined<T>() -> Either<T,Right> where Left == Either<T,Right> {
+        switch self {
+        case let .left(wrapped): return wrapped
+        case let .right(right): return .right(right)
+        }
+    }
+    
+    @inlinable
+    public func joinedRight<T>() -> Either<Left,T> where Right == Either<Left,T> {
+        switch self {
+        case .left(let left): return .left(left)
+        case .right(let wrapped): return wrapped
+        }
+    }
+    
     //MARK: - map(_:)
     
     /// Returns a new result, mapping any `left` value using the given transformation.
@@ -41,8 +57,12 @@ public enum Either<Left, Right> {
     public func map<NewLeft>(
         _ transform: (Left) throws -> NewLeft
     ) rethrows -> Either<NewLeft, Right> {
-        try flatMap {
-            try .left(transform($0))
+        switch self {
+        case let .left(left):
+            return try .left(transform(left))
+            
+        case let .right(right):
+            return .right(right)
         }
     }
     
@@ -65,8 +85,12 @@ public enum Either<Left, Right> {
     public func mapRight<NewRight>(
         _ transform: (Right) throws -> NewRight
     ) rethrows -> Either<Left, NewRight> {
-        try flatMapRight {
-            try .right(transform($0))
+        switch self {
+        case let .left(left):
+            return .left(left)
+            
+        case let .right(right):
+            return try .right(transform(right))
         }
     }
     
@@ -79,13 +103,8 @@ public enum Either<Left, Right> {
     public func flatMap<NewLeft>(
         _ transform: (Left) throws -> Either<NewLeft, Right>
     ) rethrows -> Either<NewLeft, Right> {
-        switch self {
-        case .left(let left):
-            return try transform(left)
-            
-        case .right(let right):
-            return .right(right)
-        }
+        try self.map(transform)
+            .joined()
     }
     
     /// Returns a new result, mapping any `left` value using the given asynchronous transformation
@@ -112,13 +131,8 @@ public enum Either<Left, Right> {
     public func flatMapRight<NewRight>(
         _ transform: (Right) throws -> Either<Left, NewRight>
     ) rethrows -> Either<Left, NewRight> {
-        switch self {
-        case .left(let left):
-            return .left(left)
-            
-        case .right(let right):
-            return try transform(right)
-        }
+        try self.mapRight(transform)
+            .joinedRight()
     }
     
     /// Returns a new result, mapping any `right` value using the given asynchronous transformation

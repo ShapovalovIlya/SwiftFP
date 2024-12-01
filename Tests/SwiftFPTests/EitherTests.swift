@@ -24,6 +24,20 @@ struct EitherTestsSuite {
         }
         #expect(condition ? sut == .left(1) : sut == .right("baz"))
     }
+    
+    @Test(arguments: states)
+    func joined(_ state: Sut) async throws {
+        let sut = Either.left(state).joined()
+        
+        #expect(sut == state)
+    }
+    
+    @Test(arguments: states)
+    func joinedRight(_ state: Sut) async throws {
+        let sut = Either.right(state).joinedRight()
+        
+        #expect(sut == state)
+    }
 
     @Test("map(_:) on different branches", arguments: states)
     func mapEither(initialState: Sut) async throws {
