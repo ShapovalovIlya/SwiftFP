@@ -12,14 +12,14 @@ struct EffectTest {
     static let arguments = [1,2,3,4,5]
     
     @Test(arguments: arguments)
-    func pure(_ value: Int) {
+    func run(_ value: Int) async throws {
         let sut = Effect.pure(value)
         
         #expect(sut.run() == value)
     }
     
     @Test(arguments: arguments)
-    func run(_ value: Int) async throws {
+    func pure(_ value: Int) {
         let sut = Effect.pure(value)
         
         #expect(sut.run() == value)
