@@ -20,6 +20,7 @@ import Foundation
 ///countLettersInInt(100) // output 3
 ///```
 ///
+@frozen
 public struct Reader<Environment, Result> {
     @usableFromInline let run: (Environment) -> Result
     
@@ -41,6 +42,13 @@ public struct Reader<Environment, Result> {
     @inlinable
     public func callAsFunction(_ environment: Environment) -> Result {
         apply(environment)
+    }
+    
+    @inlinable
+    public func joined<T>() -> Reader<Environment, T> where Result == Reader<Environment, T> {
+        Reader<Environment, T> { env in
+            self.apply(env).apply(env)
+        }
     }
     
     /// Transform `Reader`'s run result, using given closure.
@@ -89,9 +97,8 @@ public struct Reader<Environment, Result> {
     public func flatMap<NewResult>(
         _ transform: @escaping (Result) -> Reader<Environment, NewResult>
     ) -> Reader<Environment, NewResult> {
-        Reader<Environment, NewResult> { env in
-            map(transform).apply(env).apply(env)
-        }
+        self.map(transform)
+            .joined()
     }
     
     @inlinable
@@ -106,9 +113,9 @@ public struct Reader<Environment, Result> {
     @inlinable
     public func zip<Other, NewResult>(
         _ other: Reader<Environment, Other>,
-        into: @escaping (Result, Other) -> NewResult
+        into combine: @escaping (Result, Other) -> NewResult
     ) -> Reader<Environment, NewResult> {
         self.zip(other)
-            .map(into)
+            .map(combine)
     }
 }

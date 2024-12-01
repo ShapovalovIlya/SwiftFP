@@ -35,6 +35,7 @@ struct FutureTests {
     
     @Test(arguments: arguments)
     func map(_ value: Int) async throws {
+        @Sendable
         func longDescription(_ value: Int) async -> String {
             value.description
         }
@@ -45,11 +46,28 @@ struct FutureTests {
     
     @Test(arguments: arguments)
     func flatMap(_ value: Int) async throws {
+        @Sendable
         func futureDescription(_ value: Int) async -> Future<String> {
             Future.pure(value.description)
         }
         let sut = Sut.pure(value).flatMap(futureDescription)
         
         await #expect(sut.run() == value.description)
+    }
+    
+    @Test
+    func zip() async throws {
+        let other = Future.pure("baz")
+        let sut = Sut.pure(1).zip(other)
+        
+        await #expect(sut.run() == (1, "baz"))
+    }
+    
+    @Test
+    func zipInto() async throws {
+        let other = Sut.pure(1)
+        let sut = Sut.pure(2).zip(other) { $0 + $1 }
+        
+        await #expect(sut.run() == 3)
     }
 }

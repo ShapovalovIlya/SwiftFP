@@ -14,8 +14,21 @@ extension Int {
 }
 
 struct ReaderTests {
+    static let arguments = [1,2,3,4,5]
     typealias Sut = Reader<Int, String>
     let sut = Sut(\.description)
+    
+    @Test(arguments: arguments)
+    func apply(_ value: Int) async throws {
+        #expect(sut.apply(value) == value.description)
+    }
+    
+    @Test(arguments: arguments)
+    func joined(_ value: Int) async throws {
+        let sut = Reader.pure(Sut.pure(value.description)).joined()
+        
+        #expect(sut.apply(value) == value.description)
+    }
     
     @Test func pure() async throws {
         let sut = Sut.pure("baz")
