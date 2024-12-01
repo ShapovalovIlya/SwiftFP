@@ -28,7 +28,7 @@ struct FutureTests {
 
     @Test(arguments: arguments)
     func joined(_ value: Int) async throws {
-        async let sut = Future.pure(Sut.pure(value)).joined()
+        let sut = Future.pure(Sut.pure(value)).joined()
         
         await #expect(sut.run() == value)
     }

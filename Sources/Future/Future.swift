@@ -24,8 +24,8 @@ public struct Future<Result> {
     public func run() async -> Result { await expect() }
     
     @inlinable
-    public func joined<T>() async -> Future<T> where Result == Future<T> {
-        await self.run()
+    public func joined<T>() -> Future<T> where Result == Future<T> {
+        Future<T> { await self.run().run() }
     }
     
     @inlinable
@@ -39,6 +39,7 @@ public struct Future<Result> {
     public func flatMap<T>(
         _ transform: @escaping (Result) async -> Future<T>
     ) -> Future<T> {
-        Future<T> { await self.map(transform).run().run() }
+        self.map(transform)
+            .joined()
     }
 }
