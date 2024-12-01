@@ -21,6 +21,7 @@ let package = Package(
         Submodule.Readers.product,
         Submodule.Effects.product,
         Submodule.FoundationFX.product,
+        Submodule.State.product,
         .library(
             name: "SwiftFP",
             targets: [
@@ -32,7 +33,8 @@ let package = Package(
                 Submodule.Validated.name,
                 Submodule.Zipper.name,
                 Submodule.Readers.name,
-                Submodule.Effects.name
+                Submodule.Effects.name,
+                Submodule.State.name,
             ]
         ),
     ],
@@ -45,6 +47,7 @@ let package = Package(
         Submodule.Effects.target,
         Submodule.Validated.target,
         Submodule.FoundationFX.target,
+        Submodule.State.target,
         .target(name: "Monoid"),
         .target(
             name: "SwiftFP",
@@ -57,6 +60,7 @@ let package = Package(
                 Submodule.Readers.dependency,
                 Submodule.Effects.dependency,
                 Submodule.FoundationFX.dependency,
+                Submodule.State.dependency,
                 "Monoid",
             ]
         ),
@@ -77,6 +81,7 @@ fileprivate enum Submodule: String {
     case Readers
     case Effects
     case FoundationFX
+    case State
     
     @inlinable
     @inline(__always)

@@ -25,14 +25,14 @@ public struct Effect<Value> {
     /// Joining a nested instance into a base one
     @inlinable
     public func joined<T>() -> Effect<T> where Value == Effect<T> {
-        run()
+        self.run()
     }
     
     @inlinable
     public func map<NewValue>(
         _ transform: @escaping (Value) -> NewValue
     ) -> Effect<NewValue> {
-        Effect<NewValue> { transform(run()) }
+        Effect<NewValue> { transform(self.run()) }
     }
     
     @inlinable
