@@ -27,6 +27,12 @@ public struct Reader<Environment, Result> {
     @inlinable
     public init(_ run: @escaping (Environment) -> Result) { self.run = run }
     
+    /// Returns the “purest” instance possible for the type
+    @inlinable
+    public static func pure(_ result: Result) -> Self {
+        Reader { _ in result }
+    }
+    
     @inlinable
     public func apply(_ environment: Environment) -> Result {
         run(environment)

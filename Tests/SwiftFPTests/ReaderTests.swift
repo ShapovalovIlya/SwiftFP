@@ -14,7 +14,14 @@ extension Int {
 }
 
 struct ReaderTests {
-    let sut = Reader<Int, String>(\.description)
+    typealias Sut = Reader<Int, String>
+    let sut = Sut(\.description)
+    
+    @Test func pure() async throws {
+        let sut = Sut.pure("baz")
+        
+        #expect(sut.apply(1) == "baz")
+    }
     
     @Test func map() async throws {
         let sut = sut.map(\.count)
@@ -26,7 +33,7 @@ struct ReaderTests {
     
     @Test func flatMap() async throws {
         let sut = sut.flatMap { description in
-            Reader<Int, String> {
+            Sut {
                 description
                     .appending(" is even: ")
                     .appending($0.isEven.description)
@@ -38,7 +45,7 @@ struct ReaderTests {
     }
     
     @Test func zip() async throws {
-        let first = Reader<Int, String>(\.description)
+        let first = Sut(\.description)
         let second = Reader<Int, Bool>(\.isEven)
         
         let sut = first.zip(second)
@@ -53,7 +60,7 @@ struct ReaderTests {
             let isEven: Bool
         }
         
-        let first = Reader<Int, String>(\.description)
+        let first = Sut(\.description)
         let second = Reader<Int, Bool>(\.isEven)
         let sut = first.zip(second, into: Model.init)
         

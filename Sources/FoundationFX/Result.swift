@@ -24,26 +24,6 @@ public extension Result {
         }
     }
     
-    //MARK: - flatMap(_:)
-    
-    /// Returns a new result, asynchronous mapping any success value using the given `transformation`
-    /// and unwrapping the produced result.
-    /// - Parameter transform: A asynchronous closure that takes the success value of the instance.
-    /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
-    @inlinable
-    @discardableResult
-    func asyncFlatMap<NewSuccess>(
-        _ transform: (Success) async -> Result<NewSuccess, Failure>
-    ) async -> Result<NewSuccess, Failure> {
-        switch self {
-        case .success(let success):
-            return await transform(success)
-            
-        case .failure(let failure):
-            return .failure(failure)
-        }
-    }
-    
     //MARK: - map(_:)
     /// Returns a new result, mapping any success value using the given throwing transformation.
     /// - Parameter transform: A throwing closure that takes the success value of this instance.
@@ -70,8 +50,12 @@ public extension Result {
     func asyncMap<NewSuccess>(
         _ transform: (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
-        await asyncFlatMap { success in
-            await .success(transform(success))
+        switch self {
+        case .success(let success):
+            return await Result<NewSuccess, Failure> { await transform(success) }
+            
+        case .failure(let failure):
+            return .failure(failure)
         }
     }
     
@@ -85,7 +69,9 @@ public extension Result {
     ) async -> Result<NewSuccess, Error> {
         switch self {
         case .success(let success):
-            return await Result<NewSuccess, Error> { try await transform(success) }
+            return await Result<NewSuccess, Error> {
+                try await transform(success)
+            }
             
         case .failure(let failure):
             return .failure(failure)
@@ -103,9 +89,9 @@ public extension Result {
     func apply<NewSuccess>(
         _ functor: Result<(Success) -> NewSuccess, Failure>
     ) -> Result<NewSuccess, Failure> {
-        functor.flatMap { transform in
-            self.map(transform)
-        }
+        functor
+            .map(self.map)
+            .flatMap(\.self)
     }
     
     /// Asynchronously returns a new result, apply `Result` functor to  success value.
@@ -117,9 +103,22 @@ public extension Result {
     func asyncApply<NewSuccess>(
         _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
-        await functor.asyncFlatMap { transform in
-            await self.asyncMap(transform)
-        }
+        await functor
+            .asyncMap(self.asyncMap)
+            .flatMap(\.self)
+    }
+    
+    //MARK: - flatMap(_:)
+    
+    /// Returns a new result, asynchronous mapping any success value using the given `transformation`
+    /// and unwrapping the produced result.
+    /// - Parameter transform: A asynchronous closure that takes the success value of the instance.
+    /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
+    @inlinable
+    func asyncFlatMap<NewSuccess>(
+        _ transform: (Success) async -> Result<NewSuccess, Failure>
+    ) async -> Result<NewSuccess, Failure> {
+        await asyncMap(transform).flatMap(\.self)
     }
     
     //MARK: - zip(_:)
