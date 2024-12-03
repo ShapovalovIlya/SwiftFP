@@ -7,6 +7,10 @@
 
 import Foundation
 
+/// The `Reader` monad (also called the Environment monad).
+/// Represents a computation, which can read values from a shared environment,
+/// pass values from function to function, and execute sub-computations in a modified environment.
+///
 /// The Reader is a pattern for returning functions as part of other functions.
 /// That is, `Reader<A,B>` corresponds to a function `(A) -> B`.
 ///

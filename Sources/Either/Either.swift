@@ -7,8 +7,10 @@
 
 import Foundation
 
-/// A value that represents branching, including an associated value in each case.
-/// Perform `map`, `flatMap` either `mapRight`, `flatMapRight`.
+/// `Either` is a data structure that represent branching.
+///
+/// The `Either` monad is a object that represents computations that can result in one of two values:
+/// a success (often called `Left`) or a failure (often called `Right`).
 @frozen
 public enum Either<Left, Right> {
     case left(Left)
@@ -32,6 +34,7 @@ public enum Either<Left, Right> {
         return nil
     }
     
+    //MARK: - joined()
     @inlinable
     public func joined<T>() -> Either<T,Right> where Left == Either<T,Right> {
         switch self {
@@ -186,6 +189,8 @@ extension Either where Left == Right {
 }
 
 extension Either where Left: Error {
+    
+    /// Transform `Either` into Foundation's `Result` type.
     @inlinable
     func result() -> Result<Right, Left> {
         switch self {
@@ -196,6 +201,7 @@ extension Either where Left: Error {
 }
 
 extension Either where Right: Error {
+    /// Transform `Either` into Foundation's `Result` type.
     @inlinable
     func result() -> Result<Left, Right> {
         switch self {
