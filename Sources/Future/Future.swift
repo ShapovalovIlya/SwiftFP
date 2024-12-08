@@ -25,6 +25,7 @@ public struct Future<Value>: Sendable {
     }
     
     //MARK: - pure(_:)
+    /// Returns the “purest” instance possible for the type
     @inlinable
     public static func pure(
         _ value: Value

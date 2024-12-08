@@ -8,16 +8,12 @@
 import Foundation
 @_exported import NotEmptyArray
 
+@frozen
 public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
     case valid(Wrapped)
     case invalid(NotEmptyArray<Failure>)
     
     //MARK: - init(_:)
-    @inlinable
-    public init(_ wrapped: Wrapped) {
-        self = .valid(wrapped)
-    }
-    
     @inlinable
     public init(catch block: () throws(Failure) -> Wrapped) {
         do {
@@ -44,31 +40,95 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
         .invalid(NotEmptyArray(single: error))
     }
     
+    //MARK: - joined()
+    @inlinable
+    public func joined<T>() -> Validated<T,Failure> where Wrapped == Validated<T,Failure> {
+        switch self {
+        case let .valid(wrapped):
+            return wrapped
+            
+        case let .invalid(errors):
+            return .invalid(errors)
+        }
+    }
+    
+    //MARK: - map(_:)
+    @inlinable
+    public func map<NewWrapped>(
+        _ transform: (Wrapped) -> NewWrapped
+    ) -> Validated<NewWrapped, Failure> {
+        switch self {
+        case let .valid(wrapped):
+            return .valid(transform(wrapped))
+            
+        case let .invalid(errors):
+            return .invalid(errors)
+        }
+    }
+    
+    @inlinable
+    public func mapErrors<NewFailure>(
+        _ transform: (NotEmptyArray<Failure>) -> NotEmptyArray<NewFailure>
+    ) -> Validated<Wrapped, NewFailure> where NewFailure: Swift.Error {
+        switch self {
+        case let .valid(wrapped):
+            return .valid(wrapped)
+            
+        case let .invalid(errors):
+            return .invalid(transform(errors))
+        }
+    }
+    
+    @inlinable
+    public func mapEachError<NewFailure>(
+        _ transform: (Failure) -> NewFailure
+    ) -> Validated<Wrapped, NewFailure> where NewFailure: Swift.Error {
+        mapErrors { errors in
+            errors.mapNotEmpty(transform)
+        }
+    }
+    
+    @inlinable
+    public func asyncMap<NewWrapped>(
+        _ transform: (Wrapped) async -> NewWrapped
+    ) async -> Validated<NewWrapped, Failure> {
+        switch self {
+        case let .valid(wrapped):
+            return await .valid(transform(wrapped))
+            
+        case let .invalid(errors):
+            return .invalid(errors)
+        }
+    }
+    
+    @inlinable
+    public func tryMap<NewWrapped>(
+        _ transform: (Wrapped) throws -> NewWrapped
+    ) -> Validated<NewWrapped, Error> {
+        switch self {
+        case .valid(let wrapped):
+            return Validated<NewWrapped, Error> { try transform(wrapped) }
+            
+        case .invalid(let errors):
+            return .invalid(errors.mapNotEmpty(\.self))
+        }
+    }
+    
     //MARK: - flatMap(_:)
     @inlinable
     public func flatMap<NewWrapped>(
         _ transform: (Wrapped) -> Validated<NewWrapped, Failure>
     ) -> Validated<NewWrapped, Failure> {
-        switch self {
-        case .valid(let value):
-            return transform(value)
-            
-        case .invalid(let errors):
-            return .invalid(errors)
-        }
+        self.map(transform)
+            .joined()
     }
     
     @inlinable
     public func asyncFlatMap<NewWrapped>(
         _ transform: (Wrapped) async -> Validated<NewWrapped, Failure>
     ) async -> Validated<NewWrapped, Failure> {
-        switch self {
-        case let .valid(wrapped):
-            return await transform(wrapped)
-            
-        case let .invalid(errors):
-            return .invalid(errors)
-        }
+        await self.asyncMap(transform)
+            .joined()
     }
     
     @inlinable
@@ -94,57 +154,6 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             
         case .invalid(let errors):
             return await transform(errors)
-        }
-    }
-    
-    //MARK: - map(_:)
-    @inlinable
-    public func map<NewWrapped>(
-        _ transform: (Wrapped) -> NewWrapped
-    ) -> Validated<NewWrapped, Failure> {
-        flatMap { wrapped in
-            Validated<NewWrapped, Failure>(transform(wrapped))
-        }
-    }
-    
-    @inlinable
-    public func asyncMap<NewWrapped>(
-        _ transform: (Wrapped) async -> NewWrapped
-    ) async -> Validated<NewWrapped, Failure> {
-        await asyncFlatMap { wrapped in
-            let new = await transform(wrapped)
-            return Validated<NewWrapped, Failure>(new)
-        }
-    }
-    
-    @inlinable
-    public func tryMap<NewWrapped>(
-        _ transform: (Wrapped) throws -> NewWrapped
-    ) -> Validated<NewWrapped, Error> {
-        switch self {
-        case .valid(let wrapped):
-            return Validated<NewWrapped, Error> { try transform(wrapped) }
-            
-        case .invalid(let errors):
-            return .invalid(errors.mapNotEmpty { $0 })
-        }
-    }
-    
-    @inlinable
-    public func mapErrors<NewFailure>(
-        _ transform: (Failure) -> NewFailure
-    ) -> Validated<Wrapped, NewFailure> {
-        flatMapErrors { errors in
-            Validated<Wrapped, NewFailure>.invalid(errors.mapNotEmpty(transform))
-        }
-    }
-    
-    @inlinable
-    public func asyncMapErrors<NewFailure>(
-        _ transform: (NotEmptyArray<Failure>) async -> NotEmptyArray<NewFailure>
-    ) async -> Validated<Wrapped, NewFailure> {
-        await asyncFlatMapErrors { errors in
-            await Validated<Wrapped, NewFailure>.invalid(transform(errors))
         }
     }
     

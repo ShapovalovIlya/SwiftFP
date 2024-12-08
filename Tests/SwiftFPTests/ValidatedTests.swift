@@ -14,7 +14,7 @@ struct ValidatedTests {
     typealias ValidationResult = Result<Int, StubError>
     
     private static let arguments = [
-        Sut(1),
+        Sut.valid(1),
         Sut.failed(.one)
     ]
     
@@ -41,7 +41,7 @@ struct ValidatedTests {
     //MARK: - init
     @Test
     func initialState() async throws {
-        let sut = Sut(1)
+        let sut = Sut.valid(1)
         
         #expect(sut == .valid(1))
     }
@@ -92,6 +92,14 @@ struct ValidatedTests {
         }
     }
     
+    //MARK: - joined
+    @Test
+    func joined() async throws {
+        let sut = Validated.valid(Sut.valid(1)).joined()
+        
+        #expect(sut == .valid(1))
+    }
+    
     //MARK: - map
     @Test(arguments: arguments)
     func map(_ state: Sut) async throws {
@@ -99,7 +107,7 @@ struct ValidatedTests {
         
         switch state {
         case .valid(let wrapped):
-            #expect(sut == Validated<String, StubError>(wrapped.description))
+            #expect(sut == Validated<String, StubError>.valid(wrapped.description))
             
         case .invalid(let errors):
             #expect(sut == Validated<String, StubError>.invalid(errors))
@@ -123,38 +131,39 @@ struct ValidatedTests {
     
     @Test(arguments: arguments)
     func mapErrors(_ state: Sut) async throws {
-        let sut = state.mapErrors(MappedError.init)
+        let sut = state.mapErrors { errors in
+            errors.mapNotEmpty(MappedError.init)
+        }
         
         switch state {
         case .valid(let wrapped):
-            #expect(sut == Validated<Int, MappedError>(wrapped))
+            #expect(sut == Validated<Int, MappedError>.valid(wrapped))
             
         case .invalid:
             #expect(sut == Validated<Int, MappedError>.failed(.one))
         }
     }
     
-//    @Test(arguments: arguments)
-//    func asyncMapErrors(_ state: Sut) async throws {
-//        let sut = await state.asyncMapErrors(asyncMapError)
-//        
-//        switch (state, sut) {
-//        case let (.valid(lhs), .valid(rhs)):
-//            #expect(lhs == rhs)
-//            
-//        case let (.invalid, .invalid(errors)):
-//            #expect(errors.array == [.one])
-//            
-//        default: throw TestError()
-//        }
-//    }
+    @Test(arguments: arguments)
+    func mapEachError(_ state: Sut) async throws {
+        let sut = state.mapEachError(MappedError.init)
+        
+        switch state {
+        case .valid(let wrapped):
+            #expect(sut == Validated<Int, MappedError>.valid(wrapped))
+            
+        case .invalid:
+            #expect(sut == Validated<Int, MappedError>.failed(.one))
+        }
+    }
     
     @Test
     func tryMap() async throws {
-        let sut = Sut(1).tryMap { _ in throw StubError.one }
+        let sut = Sut.valid(1)
+            .tryMap { _ in throw StubError.one }
         
         switch sut {
-        case .valid: throw NSError()
+        case .valid: throw TestError()
         case .invalid(let errors): #expect(errors.head is StubError)
         }
     }
@@ -163,12 +172,12 @@ struct ValidatedTests {
     @Test(arguments: arguments)
     func flatMap(_ state: Sut) async throws {
         let sut = state.flatMap {
-            Validated<String, StubError>($0.description)
+            Validated<String, StubError>.valid($0.description)
         }
         
         switch state {
         case .valid(let wrapped):
-            #expect(sut == Validated<String, StubError>(wrapped.description))
+            #expect(sut == Validated<String, StubError>.valid(wrapped.description))
             
         case .invalid(let errors):
             #expect(sut == Validated<String, StubError>.invalid(errors))
@@ -184,7 +193,7 @@ struct ValidatedTests {
         
         switch state {
         case .valid(let wrapped):
-            #expect(sut == Validated<Int, MappedError>(wrapped))
+            #expect(sut == Validated<Int, MappedError>.valid(wrapped))
             
         case .invalid:
             #expect(sut == Validated<Int, MappedError>.failed(.one))
@@ -225,7 +234,7 @@ struct ValidatedTests {
     //MARK: - zip
     @Test(arguments: arguments)
     func zipValid(_ other: Sut) async throws {
-        let sut = Sut(1).zip(other)
+        let sut = Sut.valid(1).zip(other)
         
         switch (other, sut) {
         case let (.valid, .valid(pair)):
@@ -234,7 +243,7 @@ struct ValidatedTests {
         case let (.invalid(lhs), .invalid(rhs)):
             #expect(lhs == rhs)
         
-        default: throw NSError()
+        default: throw TestError()
         }
     }
     
@@ -249,13 +258,15 @@ struct ValidatedTests {
         case let (.invalid, .invalid(errors)):
             #expect(errors.array == [.one, .one])
             
-        default: throw NSError()
+        default: throw TestError()
         }
     }
     
     @Test(arguments: arguments)
     func zipValidUsingTransform(_ other: Sut) async throws {
-        let sut = Sut(1).zip(other) { $0 + $1 }
+        let sut = Sut
+            .valid(1)
+            .zip(other) { $0 + $1 }
         
         switch (other, sut) {
         case let (.valid, .valid(accumulated)):
@@ -264,14 +275,14 @@ struct ValidatedTests {
         case let (.invalid(lhs), .invalid(rhs)):
             #expect(lhs == rhs)
         
-        default: throw NSError()
+        default: throw TestError()
         }
     }
     
     @Test(arguments: arguments)
     func zipGlobal(_ state: Sut) async throws {
         let sut = zip(
-            Validated<String, StubError>("1"),
+            Validated<String, StubError>.valid("1"),
             state
         )
         
@@ -291,7 +302,7 @@ struct ValidatedTests {
         ValidationResult.failure(.one)
     ])
     func zipValidWithResult(_ result: ValidationResult) async throws {
-        let sut = Sut(1).zip(result)
+        let sut = Sut.valid(1).zip(result)
         
         switch (result, sut) {
         case let (.success, .valid(pair)):
@@ -309,7 +320,7 @@ struct ValidatedTests {
         ValidationResult.failure(.one)
     ])
     func zipValidWithResultUsingTransform(_ result: ValidationResult) async throws {
-        let sut = Sut(1).zip(result, using: +)
+        let sut = Sut.valid(1).zip(result, using: +)
         
         switch (result, sut) {
         case let (.success, .valid(val)):
@@ -344,8 +355,8 @@ struct ValidatedTests {
     
     //MARK: - accumulate
     @Test func accumulate() async throws {
-        let sut = Sut(1).accumulate { val in
-            Sut(val)
+        let sut = Sut.valid(1).accumulate { val in
+            Sut.valid(val)
             ValidationResult.success(val)
         }
         
@@ -357,8 +368,8 @@ struct ValidatedTests {
     
     @Test
     func accumulateErrors() async throws {
-        let sut = Sut(1).accumulate { _ in
-            Sut(1)
+        let sut = Sut.valid(1).accumulate { _ in
+            Sut.valid(1)
             ValidationResult.success(1)
             ValidationResult.failure(.one)
             Sut.failed(.two)
@@ -376,7 +387,7 @@ struct ValidatedTests {
     //MARK: - Helpers
     func asyncAddOne(_ val: Int) async -> Int { val + 1 }
     func asyncAddOneValidated(_ val: Int) async -> Sut {
-        await Validated(asyncAddOne(val))
+        await Validated.valid(asyncAddOne(val))
     }
     func asyncMapError(_ error: StubError) async -> MappedError {
         MappedError(stub: error)
