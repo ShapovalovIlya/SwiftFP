@@ -44,6 +44,7 @@ public struct Reader<Environment, Result> {
     }
     
     @inlinable
+    @discardableResult
     public func callAsFunction(_ environment: Environment) -> Result {
         apply(environment)
     }

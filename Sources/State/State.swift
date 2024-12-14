@@ -10,18 +10,18 @@ import Foundation
 public struct State<Environment, Value> {
     public typealias Reducer = (Environment) -> (environment: Environment, value: Value)
     
-    @usableFromInline let call: Reducer
+    @usableFromInline let reducer: Reducer
     
     @inlinable
-    public init(_ call: @escaping (Environment) -> (Environment, Value)) {
-        self.call = call
+    public init(_ reducer: @escaping (Environment) -> (Environment, Value)) {
+        self.reducer = reducer
     }
     
     @inlinable
     public func reduce(
         _ environment: Environment
     ) -> (environment: Environment, value: Value) {
-        call(environment)
+        reducer(environment)
     }
     
     /// Returns the “purest” instance possible for the type
