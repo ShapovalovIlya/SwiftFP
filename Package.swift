@@ -12,7 +12,6 @@ let package = Package(
         .macOS(.v10_15)
     ],
     products: [
-        .library(name: "Monoid", targets: ["Monoid"]),
         Submodule.Either.product,
         Submodule.Monad.product,
         Submodule.NotEmptyArray.product,
@@ -27,7 +26,6 @@ let package = Package(
             name: "SwiftFP",
             targets: [
                 "SwiftFP",
-                "Monoid",
                 Submodule.Either.name,
                 Submodule.Monad.name,
                 Submodule.NotEmptyArray.name,
@@ -51,7 +49,6 @@ let package = Package(
         Submodule.FoundationFX.target,
         Submodule.State.target,
         Submodule.Future.target,
-        .target(name: "Monoid"),
         .target(
             name: "SwiftFP",
             dependencies: [
@@ -65,7 +62,6 @@ let package = Package(
                 Submodule.FoundationFX.dependency,
                 Submodule.State.dependency,
                 Submodule.Future.dependency,
-                "Monoid",
             ]
         ),
         .testTarget(
