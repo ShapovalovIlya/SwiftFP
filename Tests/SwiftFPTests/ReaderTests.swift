@@ -85,4 +85,12 @@ struct ReaderTests {
         #expect(eventModel.description == "2")
         #expect(eventModel.isEven)
     }
+    
+    @Test func readerSubscript() async throws {
+        let sut = Reader<URL, URLRequest>
+            .init { URLRequest(url: $0) }
+            .httpMethod("GET")
+        
+        #expect(sut.apply(URL(string: "MyURL")!).httpMethod == "GET")
+    }
 }

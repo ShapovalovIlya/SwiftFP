@@ -25,12 +25,27 @@ import Foundation
 ///```
 ///
 @frozen
+@dynamicMemberLookup
 public struct Reader<Environment, Result> {
     @usableFromInline let run: (Environment) -> Result
     
     //MARK: - init(_:)
     @inlinable
     public init(_ run: @escaping (Environment) -> Result) { self.run = run }
+    
+    //MARK: - Subscript
+    @inlinable
+    public subscript<T>(dynamicMember keyPath: WritableKeyPath<Result, T>) -> (T) -> Self {
+        { newValue in
+            map { old in
+                var new = old
+                new[keyPath: keyPath] = newValue
+                return new
+            }
+        }
+    }
+    
+    //MARK: - Public methods
     
     /// Returns the “purest” instance possible for the type
     @inlinable
