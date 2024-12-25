@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Either
+@_exported import Either
 
 public extension Result {
     //MARK: - init(_:)

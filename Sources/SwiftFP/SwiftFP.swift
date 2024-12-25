@@ -5,7 +5,6 @@
 //  Created by Илья Шаповалов on 30.11.2024.
 //
 
-@_exported import Monoid
 @_exported import Either
 @_exported import Monad
 @_exported import NotEmptyArray

@@ -35,6 +35,7 @@ let package = Package(
                 Submodule.Effects.name,
                 Submodule.State.name,
                 Submodule.Future.name,
+                Submodule.FoundationFX.name
             ]
         ),
     ],
@@ -101,6 +102,17 @@ fileprivate enum Submodule: String {
                     name: name,
                     dependencies: [
                         Submodule.NotEmptyArray.dependency
+                    ],
+                    swiftSettings: [
+                        .enableExperimentalFeature("StrictConcurrency")
+                    ]
+                )
+            
+        case .FoundationFX:
+                .target(
+                    name: name,
+                    dependencies: [
+                        Submodule.Either.dependency
                     ],
                     swiftSettings: [
                         .enableExperimentalFeature("StrictConcurrency")
