@@ -93,6 +93,13 @@ public struct Reader<Environment, Result> {
         Reader<Environment, NewResult> { transform(apply($0)) }
     }
     
+    @inlinable
+    public func tryMap<NewResult>(
+        _ transform: @escaping (Result) throws -> NewResult
+    ) -> Reader<Environment, Swift.Result<NewResult, Error>> {
+        map { r in Swift.Result { try transform(r) } }
+    }
+    
     /// Evaluate given closure and wrap current functor into result `Reader`.
     ///
     ///```swift

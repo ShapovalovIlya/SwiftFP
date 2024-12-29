@@ -93,4 +93,20 @@ struct ReaderTests {
         
         #expect(sut.apply(URL(string: "MyURL")!).httpMethod == "GET")
     }
+    
+    @Test func tryMapValue() async throws {
+        func addOne(_ int: Int) throws -> Int { int + 1 }
+        let sut = Reader<Int, Int>(\.self).tryMap(addOne)
+        
+        try #expect(sut.apply(1).get() == 2)
+    }
+    
+    @Test func tryMapError() async throws {
+        func addOne(_ int: Int) throws -> Int {
+            throw NSError(domain: "Test", code: 1)
+        }
+        let sut = Reader<Int, Int>(\.self).tryMap(addOne)
+        
+        #expect(throws: NSError.self, performing: sut.apply(1).get)
+    }
 }

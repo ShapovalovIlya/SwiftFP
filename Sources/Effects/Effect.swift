@@ -26,7 +26,7 @@ public struct Effect<Value> {
     /// Joining a nested instance into a base one
     @inlinable
     public func joined<T>() -> Effect<T> where Value == Effect<T> {
-        self.run()
+        Effect<T> { self.run().run() }
     }
     
     @inlinable
