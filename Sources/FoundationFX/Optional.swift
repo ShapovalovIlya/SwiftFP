@@ -104,18 +104,21 @@ public extension Optional {
 public extension Optional where Wrapped: BinaryInteger {
     
     /// If this instance is `nil`, returns zero.
+    @inline(__always)
     var orZero: Wrapped { replaceNil(.zero) }
 }
 
 public extension Optional where Wrapped: BinaryFloatingPoint {
     
     /// If this instance is `nil`, returns zero.
+    @inline(__always)
     var orZero: Wrapped { replaceNil(.zero) }
 }
 
 public extension Optional where Wrapped == String {
     
     /// If this instance is `nil`, returns empty string.
+    @inline(__always)
     var orEmpty: Wrapped { replaceNil(String()) }
 }
 
