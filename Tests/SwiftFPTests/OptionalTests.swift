@@ -30,6 +30,58 @@ struct OptionalTestNew {
         case .none: #expect(result)
         }
     }
+    
+    //MARK: - replaceNill
+    @Test(arguments: [1, nil])
+    func replaceNil(state: Int?) async throws {
+        let validState = 2
+        let sut = state.replaceNil(validState)
+        
+        switch state {
+        case .some(let val): #expect(sut == val)
+        case .none: #expect(sut == validState)
+        }
+    }
+    
+    @Test(arguments: [1, nil])
+    func intOrZero(_ state: Int?) async throws {
+        let sut = state.orZero
+        
+        switch state {
+        case .some(let wrapped): #expect(sut == wrapped)
+        case .none: #expect(sut == .zero)
+        }
+    }
+    
+    @Test(arguments: [1.0, nil])
+    func floatOrZero(_ state: Float?) async throws {
+        let sut = state.orZero
+        
+        switch state {
+        case .some(let wrapped): #expect(sut == wrapped)
+        case .none: #expect(sut == .zero)
+        }
+    }
+    
+    @Test(arguments: [1.0, nil])
+    func doubleOrZero(_ state: Double?) async throws {
+        let sut = state.orZero
+        
+        switch state {
+        case .some(let wrapped): #expect(sut == wrapped)
+        case .none: #expect(sut == .zero)
+        }
+    }
+    
+    @Test(arguments: ["baz", nil])
+    func stringOrEmpty(_ state: String?) async throws {
+        let sut = state.orEmpty
+        
+        switch state {
+        case .some(let wrapped): #expect(sut == wrapped)
+        case .none: #expect(sut == "")
+        }
+    }
 }
 
 final class OptionalTests: XCTestCase {
@@ -158,8 +210,10 @@ final class OptionalTests: XCTestCase {
 }
 
 //MARK: - Helpers
-private extension OptionalTests {
-    func addOne(_ v: Int) -> Int { v + 1 }
-    @Sendable func asyncAddOne(_ v: Int) async -> Int { v + 1 }
-    @Sendable func asyncAddOneOpt(_ v: Int) async -> Int? { .some(v + 1) }
-}
+fileprivate func addOne(_ v: Int) -> Int { v + 1 }
+
+@Sendable
+fileprivate func asyncAddOne(_ v: Int) async -> Int { v + 1 }
+
+@Sendable
+fileprivate func asyncAddOneOpt(_ v: Int) async -> Int? { .some(v + 1) }

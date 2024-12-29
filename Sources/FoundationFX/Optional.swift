@@ -90,6 +90,33 @@ public extension Optional {
     func reduce<T>(_ body: (Wrapped?) throws -> T) rethrows -> T {
         try body(self)
     }
+    
+    /// Replace `nil` with given value.
+    @inlinable
+    func replaceNil(_ other: Wrapped) -> Wrapped {
+        switch self {
+        case .none: return other
+        case .some(let wrapped): return wrapped
+        }
+    }
+}
+
+public extension Optional where Wrapped: BinaryInteger {
+    
+    /// If this instance is `nil`, returns zero.
+    var orZero: Wrapped { replaceNil(.zero) }
+}
+
+public extension Optional where Wrapped: BinaryFloatingPoint {
+    
+    /// If this instance is `nil`, returns zero.
+    var orZero: Wrapped { replaceNil(.zero) }
+}
+
+public extension Optional where Wrapped == String {
+    
+    /// If this instance is `nil`, returns empty string.
+    var orEmpty: Wrapped { replaceNil(String()) }
 }
 
 /// Zip two optional values.
