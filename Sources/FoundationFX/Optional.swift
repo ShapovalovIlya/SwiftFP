@@ -83,12 +83,16 @@ public extension Optional {
         try flatMap { try condition($0) ? $0 : nil }
     }
     
-    /// Evaluates given closure, passing current state as parameter.
-    /// - Parameter body: A closure that takes current state of the instance
+    /// Evaluates given closure, passing current value as parameter.
+    /// - Parameter body: A closure that takes current wrapped value
     /// - Returns: result of execution as new type.
     @inlinable
-    func reduce<T>(_ body: (Wrapped?) throws -> T) rethrows -> T {
-        try body(self)
+    func reduce(_ process: (inout Wrapped) throws -> Void) rethrows -> Self {
+        try map {
+            var mutating = $0
+            try process(&mutating)
+            return mutating 
+        }
     }
     
     /// Replace `nil` with given value.

@@ -23,11 +23,11 @@ struct OptionalTestNew {
     
     @Test(arguments: [1, nil])
     func reduce(state: Int?) async throws {
-        let result = state.reduce { $0 == nil }
+        let result = state.reduce { $0 += 1 }
         
         switch state {
-        case .some: #expect(!result)
-        case .none: #expect(result)
+        case .some(let wrapped): #expect(result == wrapped + 1)
+        case .none: #expect(result == nil)
         }
     }
     

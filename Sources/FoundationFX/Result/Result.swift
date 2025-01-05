@@ -135,8 +135,12 @@ public extension Result {
     }
     
     @inlinable
-    func reduce<T>(_ body: (Self) throws -> T) rethrows -> T {
-        try body(self)
+    func reduce(_ process: (inout Success) -> Void) -> Self {
+        map {
+            var mutating = $0
+            process(&mutating)
+            return mutating
+        }
     }
     
     @inlinable

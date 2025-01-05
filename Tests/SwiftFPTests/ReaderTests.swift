@@ -109,4 +109,10 @@ struct ReaderTests {
         
         #expect(throws: NSError.self, performing: sut.apply(1).get)
     }
+    
+    @Test func reduce() async throws {
+        let sut = Sut(\.description).reduce { $0 += " baz" }
+
+        #expect(sut(1) == "1 baz")
+    }
 }

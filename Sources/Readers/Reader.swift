@@ -35,14 +35,10 @@ public struct Reader<Environment, Result> {
     
     //MARK: - Subscript
     @inlinable
-    public subscript<T>(dynamicMember keyPath: WritableKeyPath<Result, T>) -> (T) -> Self {
-        { newValue in
-            map { old in
-                var new = old
-                new[keyPath: keyPath] = newValue
-                return new
-            }
-        }
+    public subscript<T>(
+        dynamicMember keyPath: WritableKeyPath<Result, T>
+    ) -> (T) -> Self {
+        { newValue in self.reduce { $0[keyPath: keyPath] = newValue } }
     }
     
     //MARK: - Public methods
@@ -144,5 +140,14 @@ public struct Reader<Environment, Result> {
     ) -> Reader<Environment, NewResult> {
         self.zip(other)
             .map(combine)
+    }
+    
+    @inlinable
+    public func reduce(_ process: @escaping (inout Result) -> Void) -> Self {
+        map {
+            var mutating = $0
+            process(&mutating)
+            return mutating
+        }
     }
 }
