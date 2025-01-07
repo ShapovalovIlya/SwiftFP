@@ -115,4 +115,12 @@ struct ReaderTests {
 
         #expect(sut(1) == "1 baz")
     }
+    
+    @Test func pullback() async throws {
+        func doubleToInt(_ double: Double) -> Int { Int(double) }
+        
+        let sut = Sut(\.description).pullback(doubleToInt)
+        
+        #expect(sut(2.0) == "2")
+    }
 }

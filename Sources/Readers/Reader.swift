@@ -89,6 +89,22 @@ public struct Reader<Environment, Result> {
         Reader<Environment, NewResult> { transform(apply($0)) }
     }
     
+    /// Transform `Reader`'s environment, using given closure.
+    ///
+    /// ```swift
+    ///  // TO DO - Find proper code example 😀
+    /// ```
+    ///
+    /// - Parameter transform: closure with context that returns new `Reader`'s environment.
+    /// - Returns: New `Reader` with given source of environment.
+    @inlinable
+    public func pullback<Source>(
+        _ transform: @escaping (Source) -> Environment
+    ) -> Reader<Source, Result> {
+        Reader<Source, Environment>(transform)
+            .map(self.apply)
+    }
+    
     @inlinable
     public func tryMap<NewResult>(
         _ transform: @escaping (Result) throws -> NewResult
