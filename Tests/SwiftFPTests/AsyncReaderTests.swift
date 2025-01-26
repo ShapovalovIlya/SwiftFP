@@ -18,12 +18,10 @@ struct AsyncReaderTests {
     }
     
     @Test func usingKeyPath() async throws {
-        let sut = AsyncReader<Int, TestStruct> { val in
-            TestStruct(value: val, string: "")
-        }
-        .string("baz")
+        let sut = AsyncReader<Int, IntInfo>(IntInfo.init)
+            .description("baz")
         
-        await #expect(sut(10) == TestStruct(value: 10, string: "baz"))
+        await #expect(sut(10).description == "baz")
     }
     
     @Test func pure() async throws {
@@ -69,11 +67,43 @@ struct AsyncReaderTests {
         
         await #expect(sut(2.0) == "2")
     }
+    
+    @Test func zip() async throws {
+        let other = AsyncReader<Int, Bool>(\.isEven)
+        let zipped = sut.zip(other)
+        
+        await #expect(zipped(1) == ("1", false))
+    }
+    
+    @Test func zipInto() async throws {
+        let isEvent = AsyncReader<Int, Bool>(\.isEven)
+        let describer = AsyncReader<Int, String>(\.description)
+        
+        let sut = describer.zip(isEvent, into: IntInfo.asyncParse)
+        
+        await #expect(sut(1) == IntInfo(description: 1.description, isEvent: 1.isEven))
+    }
 }
 
 private extension AsyncReaderTests {
-    struct TestStruct: Equatable {
-        var value: Int = 0
-        var string: String = ""
+    struct IntInfo: Equatable {
+        var description: String
+        var isEvent: Bool
+        
+        init(description: String = String(), isEvent: Bool = false) {
+            self.description = description
+            self.isEvent = isEvent
+        }
+        
+        @Sendable
+        init(value: Int) {
+            self.description = value.description
+            self.isEvent = value.isEven
+        }
+        
+        @Sendable
+        static func asyncParse(_ desc: String, isEven: Bool) async -> IntInfo {
+            IntInfo(description: desc, isEvent: isEven)
+        }
     }
 }

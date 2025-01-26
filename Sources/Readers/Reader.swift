@@ -78,9 +78,9 @@ public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
     /// let counter = Reader<Int, String>(\.description).map(\.count)
     ///
     /// // Evaluate dependency with different input values
-    /// counter.run(1)   // output 1
-    /// counter.run(10)  // output 2
-    /// counter.run(100) // output 3
+    /// counter.apply(1)   // output 1
+    /// counter.apply(10)  // output 2
+    /// counter.apply(100) // output 3
     /// ```
     ///
     /// - Parameter transform: evaluate closure after `Reader`'s `run` property
@@ -127,8 +127,8 @@ public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
     ///         }
     ///     }
     ///
-    /// isEvenChecker.run(1) // output "1 is even: false"
-    /// isEvenChecker.run(2) // output "2 is even: true"
+    /// isEvenChecker.apply(1) // output "1 is even: false"
+    /// isEvenChecker.apply(2) // output "2 is even: true"
     ///```
     ///
     /// - Parameter transform: closure that takes current `Environment` and return new `Reader`

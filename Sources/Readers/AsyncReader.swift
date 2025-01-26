@@ -118,4 +118,35 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable,
         AsyncReader<Source, IO>(task)
             .map(self.apply)
     }
+    
+    /// Zip
+    ///
+    ///```swift
+    ///let describer = AsyncReader<Int, String>(\.description)
+    ///let isEven = AsyncReader<Int, Bool>(\.isEven)
+    ///let combined = describer.zip(isEven)
+    ///
+    ///await combined.apply(1) // output ("1", false)
+    ///await combined.apply(2) // output ("2", true)
+    ///```
+    ///
+    /// - Parameter other: `AsyncReader` instance to combine.
+    /// - Returns: instance of `AsyncReader` that contains task result of two upstream readers in tuple
+    @inlinable
+    public func zip<Other>(
+        _ other: AsyncReader<IO, Other>
+    ) -> AsyncReader<IO, (Result, Other)> {
+        flatMap { result in
+            other.map { (result, $0) }
+        }
+    }
+
+    @inlinable
+    public func zip<Other, Combined>(
+        _ other: AsyncReader<IO, Other>,
+        into combine: @escaping @Sendable (Result, Other) async -> Combined
+    ) -> AsyncReader<IO, Combined> {
+        self.zip(other)
+            .map(combine)
+    }
 }
