@@ -44,4 +44,11 @@ struct StateTests {
         
         #expect(sut.reduce(1) == (1,false))
     }
+    
+    @Test func pullback() async throws {
+        func counter(_ string: String) -> Int { string.count }
+        let sut = Sut.pure("baz").pullback(counter(_:))
+        
+        #expect(sut.reduce("foo") == ("foo", "baz"))
+    }
 }

@@ -26,17 +26,20 @@ import Foundation
 ///
 @frozen
 @dynamicMemberLookup
-public struct Reader<Environment, Result> {
-    @usableFromInline let run: (Environment) -> Result
+public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
+                                                          Result: Sendable {
+    public typealias Work = @Sendable (Environment) -> Result
+    
+    @usableFromInline let run: Work
     
     //MARK: - init(_:)
     @inlinable
-    public init(_ run: @escaping (Environment) -> Result) { self.run = run }
+    public init(_ run: @escaping Work) { self.run = run }
     
     //MARK: - Subscript
     @inlinable
-    public subscript<T>(
-        dynamicMember keyPath: WritableKeyPath<Result, T>
+    public subscript<T: Sendable>(
+        dynamicMember keyPath: WritableKeyPath<Result, T> & Sendable
     ) -> (T) -> Self {
         { newValue in self.reduce { $0[keyPath: keyPath] = newValue } }
     }
@@ -49,6 +52,7 @@ public struct Reader<Environment, Result> {
         Reader { _ in result }
     }
     
+    @Sendable
     @inlinable
     public func apply(_ environment: Environment) -> Result {
         run(environment)
@@ -77,14 +81,13 @@ public struct Reader<Environment, Result> {
     /// counter.run(1)   // output 1
     /// counter.run(10)  // output 2
     /// counter.run(100) // output 3
-    ///
     /// ```
     ///
     /// - Parameter transform: evaluate closure after `Reader`'s `run` property
     /// - Returns: New `Reader` instance with additional transformation on `Result`- type
     @inlinable
     public func map<NewResult>(
-        _ transform: @escaping (Result) -> NewResult
+        _ transform: @escaping @Sendable (Result) -> NewResult
     ) -> Reader<Environment, NewResult> {
         Reader<Environment, NewResult> { transform(apply($0)) }
     }
@@ -99,7 +102,7 @@ public struct Reader<Environment, Result> {
     /// - Returns: New `Reader` with given source of environment.
     @inlinable
     public func pullback<Source>(
-        _ transform: @escaping (Source) -> Environment
+        _ transform: @escaping @Sendable (Source) -> Environment
     ) -> Reader<Source, Result> {
         Reader<Source, Environment>(transform)
             .map(self.apply)
@@ -107,7 +110,7 @@ public struct Reader<Environment, Result> {
     
     @inlinable
     public func tryMap<NewResult>(
-        _ transform: @escaping (Result) throws -> NewResult
+        _ transform: @escaping @Sendable (Result) throws -> NewResult
     ) -> Reader<Environment, Swift.Result<NewResult, Error>> {
         map { r in Swift.Result { try transform(r) } }
     }
@@ -115,7 +118,6 @@ public struct Reader<Environment, Result> {
     /// Evaluate given closure and wrap current functor into result `Reader`.
     ///
     ///```swift
-    ///
     /// let isEvenChecker = Reader<Int, String>(\.description)
     ///     .flatMap { description in
     ///         Reader<Int, String> { environment
@@ -127,14 +129,13 @@ public struct Reader<Environment, Result> {
     ///
     /// isEvenChecker.run(1) // output "1 is even: false"
     /// isEvenChecker.run(2) // output "2 is even: true"
-    ///
     ///```
     ///
     /// - Parameter transform: closure that takes current `Environment` and return new `Reader`
     /// - Returns: new `Reader` that is a combination of transformation over current.
     @inlinable
     public func flatMap<NewResult>(
-        _ transform: @escaping (Result) -> Reader<Environment, NewResult>
+        _ transform: @escaping @Sendable (Result) -> Reader<Environment, NewResult>
     ) -> Reader<Environment, NewResult> {
         self.map(transform)
             .joined()
@@ -152,14 +153,16 @@ public struct Reader<Environment, Result> {
     @inlinable
     public func zip<Other, NewResult>(
         _ other: Reader<Environment, Other>,
-        into combine: @escaping (Result, Other) -> NewResult
+        into combine: @escaping @Sendable (Result, Other) -> NewResult
     ) -> Reader<Environment, NewResult> {
         self.zip(other)
             .map(combine)
     }
     
     @inlinable
-    public func reduce(_ process: @escaping (inout Result) -> Void) -> Self {
+    public func reduce(
+        _ process: @escaping @Sendable (inout Result) -> Void
+    ) -> Self {
         map {
             var mutating = $0
             process(&mutating)

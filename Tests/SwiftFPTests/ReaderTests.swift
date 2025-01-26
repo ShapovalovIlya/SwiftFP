@@ -71,6 +71,11 @@ struct ReaderTests {
         struct Model: Equatable {
             let description: String
             let isEven: Bool
+            
+            @Sendable init(description: String, isEven: Bool) {
+                self.description = description
+                self.isEven = isEven
+            }
         }
         
         let first = Sut(\.description)
@@ -95,14 +100,14 @@ struct ReaderTests {
     }
     
     @Test func tryMapValue() async throws {
-        func addOne(_ int: Int) throws -> Int { int + 1 }
+        @Sendable func addOne(_ int: Int) throws -> Int { int + 1 }
         let sut = Reader<Int, Int>(\.self).tryMap(addOne)
         
         try #expect(sut.apply(1).get() == 2)
     }
     
     @Test func tryMapError() async throws {
-        func addOne(_ int: Int) throws -> Int {
+        @Sendable func addOne(_ int: Int) throws -> Int {
             throw NSError(domain: "Test", code: 1)
         }
         let sut = Reader<Int, Int>(\.self).tryMap(addOne)
@@ -117,7 +122,7 @@ struct ReaderTests {
     }
     
     @Test func pullback() async throws {
-        func doubleToInt(_ double: Double) -> Int { Int(double) }
+        @Sendable func doubleToInt(_ double: Double) -> Int { Int(double) }
         
         let sut = Sut(\.description).pullback(doubleToInt)
         

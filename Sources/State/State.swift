@@ -55,4 +55,14 @@ public struct State<Environment, Value> {
         self.map(transform)
             .joined()
     }
+    
+    @inlinable
+    public func pullback<T>(
+        _ transform: @escaping (T) -> Environment
+    ) -> State<T, Value> {
+        State<T, Value> { source in
+            let env = transform(source)
+            return (source, reduce(env).value)
+        }
+    }
 }
