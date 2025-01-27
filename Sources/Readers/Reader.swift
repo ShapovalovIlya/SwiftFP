@@ -169,3 +169,10 @@ public struct Reader<Environment, Result>: Sendable {
         }
     }
 }
+
+public extension Reader where Environment == Result {
+    @inlinable
+    static func + (_ lhs: Self, _ rhs: Self) -> Self {
+        lhs.map(rhs.apply)
+    }
+}
