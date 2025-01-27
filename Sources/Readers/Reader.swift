@@ -26,8 +26,7 @@ import Foundation
 ///
 @frozen
 @dynamicMemberLookup
-public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
-                                                          Result: Sendable {
+public struct Reader<Environment, Result>: Sendable {
     public typealias Work = @Sendable (Environment) -> Result
     
     @usableFromInline let run: Work
@@ -48,7 +47,7 @@ public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
     
     /// Returns the “purest” instance possible for the type
     @inlinable
-    public static func pure(_ result: Result) -> Self {
+    public static func pure(_ result: Result) -> Self where Result: Sendable {
         Reader { _ in result }
     }
     
@@ -144,7 +143,7 @@ public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
     @inlinable
     public func zip<Other>(
         _ other: Reader<Environment, Other>
-    ) -> Reader<Environment, (Result, Other)> {
+    ) -> Reader<Environment, (Result, Other)> where Result: Sendable {
         flatMap { result in
             other.map { (result, $0) }
         }
@@ -154,7 +153,7 @@ public struct Reader<Environment, Result>: Sendable where Environment: Sendable,
     public func zip<Other, NewResult>(
         _ other: Reader<Environment, Other>,
         into combine: @escaping @Sendable (Result, Other) -> NewResult
-    ) -> Reader<Environment, NewResult> {
+    ) -> Reader<Environment, NewResult> where Result: Sendable {
         self.zip(other)
             .map(combine)
     }

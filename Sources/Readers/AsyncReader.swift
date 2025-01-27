@@ -9,8 +9,7 @@ import Foundation
 
 @frozen
 @dynamicMemberLookup
-public struct AsyncReader<IO, Result>: Sendable where IO: Sendable,
-                                                   Result: Sendable {
+public struct AsyncReader<IO, Result>: Sendable {
     public typealias Task = @Sendable (IO) async -> Result
     
     @usableFromInline let run: Task
@@ -36,7 +35,7 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable,
     /// - Parameter result: Value which will be used as `Reader`'s task result.
     /// - Returns: Instance of `AsyncReader`, contained `Result` value, not depending of any `IO`
     @inlinable
-    public static func pure(_ result: Result) -> Self {
+    public static func pure(_ result: Result) -> Self where Result: Sendable {
         AsyncReader { _ in result }
     }
     
@@ -135,7 +134,7 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable,
     @inlinable
     public func zip<Other>(
         _ other: AsyncReader<IO, Other>
-    ) -> AsyncReader<IO, (Result, Other)> {
+    ) -> AsyncReader<IO, (Result, Other)> where Result: Sendable {
         flatMap { result in
             other.map { (result, $0) }
         }
@@ -145,7 +144,7 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable,
     public func zip<Other, Combined>(
         _ other: AsyncReader<IO, Other>,
         into combine: @escaping @Sendable (Result, Other) async -> Combined
-    ) -> AsyncReader<IO, Combined> {
+    ) -> AsyncReader<IO, Combined> where Result: Sendable {
         self.zip(other)
             .map(combine)
     }
