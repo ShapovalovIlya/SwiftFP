@@ -168,11 +168,16 @@ public struct Reader<Environment, Result>: Sendable {
             return mutating
         }
     }
+    
+    @inlinable
+    public func curry<T>(_ next: Reader<Result, T>) -> Reader<Environment, T> {
+        map(next.apply)
+    }
 }
 
 public extension Reader where Environment == Result {
     @inlinable
     static func + (_ lhs: Self, _ rhs: Self) -> Self {
-        lhs.map(rhs.apply)
+        lhs.curry(rhs)
     }
 }

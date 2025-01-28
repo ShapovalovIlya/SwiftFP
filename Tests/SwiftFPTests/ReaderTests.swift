@@ -128,4 +128,30 @@ struct ReaderTests {
         
         #expect(sut(2.0) == "2")
     }
+    
+    @Test func carry() async throws {
+        let addOne = Reader<Int, Int> { $0 + 1 }
+        let describe = Sut(\.description)
+        let checkEmpty = Reader<String, Bool>(\.isEmpty)
+        
+        let three = addOne.curry(addOne)
+                    
+        #expect(three(1) == 3)
+        
+        let described = three.curry(describe)
+        
+        #expect(described(1) == "3")
+        
+        let isEmpty = described.curry(checkEmpty)
+        
+        #expect(isEmpty(1) == false)
+    }
+    
+    @Test func addOther() async throws {
+        let addOne = Reader<Int, Int> { $0 + 1 }
+        
+        let addTwo = addOne + addOne
+        
+        #expect(addTwo(1) == 3)
+    }
 }
