@@ -48,7 +48,7 @@ public extension Result {
     /// if this instance represents a success.
     @inlinable
     func asyncMap<NewSuccess>(
-        _ transform: (Success) async -> NewSuccess
+        _ transform: @Sendable (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
         switch self {
         case .success(let success):
@@ -65,7 +65,7 @@ public extension Result {
     /// if this instance represents a success.
     @inlinable
     func asyncTryMap<NewSuccess>(
-        _ transform: (Success) async throws -> NewSuccess
+        _ transform: @Sendable (Success) async throws -> NewSuccess
     ) async -> Result<NewSuccess, Error> {
         switch self {
         case .success(let success):
@@ -116,7 +116,7 @@ public extension Result {
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
     func asyncFlatMap<NewSuccess>(
-        _ transform: (Success) async -> Result<NewSuccess, Failure>
+        _ transform: @Sendable (Success) async -> Result<NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         await asyncMap(transform).flatMap(\.self)
     }
