@@ -126,6 +126,15 @@ public extension Optional where Wrapped == String {
     var orEmpty: Wrapped { replaceNil(String()) }
 }
 
+public extension Optional where Wrapped == Bool {
+    
+    /// If this instance is `nil`, returns `false`
+    @inlinable var orFalse: Wrapped { self.replaceNil(false) }
+    
+    /// If this instance is `nil`, returns `true`
+    @inlinable var orTrue: Wrapped { self.replaceNil(true) }
+}
+
 /// Zip two optional values.
 /// - Parameters:
 ///   - lhs: first optional value to combine
