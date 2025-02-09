@@ -196,8 +196,17 @@ private extension ResultTests {
     
     func addOne(_ v: Int) -> Int { v + 1 }
     func throwError(_ v: Int) throws -> Int { throw TestFail() }
-    func asyncThrowError(_ v: Int) async throws -> Int { throw TestFail() }
+    
+    @Sendable func asyncThrowError(_ v: Int) async throws -> Int {
+        throw TestFail()
+    }
+    
     @Sendable func asyncAddOne(_ v: Int) async -> Int { v + 1 }
-    func asyncAddOneSuccess(_ v: Int) async -> Result<Int, Error> { .success(v + 1) }
-    func asyncAddOneFailure(_ v: Int) async -> Result<Int, Error> { .failure(TestFail()) }
+    
+    @Sendable func asyncAddOneSuccess(_ v: Int) async -> Result<Int, Error> {
+        .success(v + 1)
+    }
+    
+    @Sendable func asyncAddOneFailure(_ v: Int) async -> Result<Int, Error> { .failure(TestFail())
+    }
 }

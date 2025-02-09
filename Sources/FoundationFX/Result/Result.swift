@@ -42,23 +42,6 @@ public extension Result {
         }
     }
     
-    /// Returns a new result, mapping any success value using the given asynchronous transformation.
-    /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
-    /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
-    /// if this instance represents a success.
-    @inlinable
-    func asyncMap<NewSuccess>(
-        _ transform: @Sendable (Success) async -> NewSuccess
-    ) async -> Result<NewSuccess, Failure> {
-        switch self {
-        case .success(let success):
-            return await Result<NewSuccess, Failure> { await transform(success) }
-            
-        case .failure(let failure):
-            return .failure(failure)
-        }
-    }
-    
     /// Returns a new result, mapping any success value using the given asynchronous throwing transformation.
     /// - Parameter transform: A asynchronous throwing closure that takes the success value of this instance.
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
@@ -92,33 +75,6 @@ public extension Result {
         functor
             .map(self.map)
             .flatMap(\.self)
-    }
-    
-    /// Asynchronously returns a new result, apply `Result` functor to  success value.
-    /// - Parameter functor: A `Result` functor that takes success value of this instance.
-    /// - Returns: A `Result` instance with the result of evaluating stored function as the new success value.
-    /// If any of given `Result` instances are failure, then produced `Result` will be failure.
-    @inlinable
-    @discardableResult
-    func asyncApply<NewSuccess>(
-        _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
-    ) async -> Result<NewSuccess, Failure> {
-        await functor
-            .asyncMap(self.asyncMap)
-            .flatMap(\.self)
-    }
-    
-    //MARK: - flatMap(_:)
-    
-    /// Returns a new result, asynchronous mapping any success value using the given `transformation`
-    /// and unwrapping the produced result.
-    /// - Parameter transform: A asynchronous closure that takes the success value of the instance.
-    /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
-    @inlinable
-    func asyncFlatMap<NewSuccess>(
-        _ transform: @Sendable (Success) async -> Result<NewSuccess, Failure>
-    ) async -> Result<NewSuccess, Failure> {
-        await asyncMap(transform).flatMap(\.self)
     }
     
     //MARK: - zip(_:)
@@ -162,7 +118,52 @@ public extension Result where Success == Data {
     }
 }
 
-extension Result: Sendable where Success: Sendable, Failure: Sendable {}
+extension Result: Sendable where Success: Sendable, Failure: Sendable {
+    /// Returns a new result, mapping any success value using the given asynchronous transformation.
+    /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
+    /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
+    /// if this instance represents a success.
+    @inlinable
+    @Sendable
+    public func asyncMap<NewSuccess>(
+        _ transform: @Sendable (Success) async -> NewSuccess
+    ) async -> Result<NewSuccess, Failure> {
+        switch self {
+        case .success(let success):
+            return await Result<NewSuccess, Failure> { await transform(success) }
+            
+        case .failure(let failure):
+            return .failure(failure)
+        }
+    }
+    
+    /// Returns a new result, asynchronous mapping any success value using the given `transformation`
+    /// and unwrapping the produced result.
+    /// - Parameter transform: A asynchronous closure that takes the success value of the instance.
+    /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
+    @inlinable
+    @Sendable
+    public func asyncFlatMap<NewSuccess>(
+        _ transform: @Sendable (Success) async -> Result<NewSuccess, Failure>
+    ) async -> Result<NewSuccess, Failure> {
+        await asyncMap(transform).flatMap(\.self)
+    }
+    
+    /// Asynchronously returns a new result, apply `Result` functor to  success value.
+    /// - Parameter functor: A `Result` functor that takes success value of this instance.
+    /// - Returns: A `Result` instance with the result of evaluating stored function as the new success value.
+    /// If any of given `Result` instances are failure, then produced `Result` will be failure.
+    @inlinable
+    @Sendable
+    @discardableResult
+    public func asyncApply<NewSuccess>(
+        _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
+    ) async -> Result<NewSuccess, Failure> {
+        await functor
+            .asyncMap(self.asyncMap)
+            .flatMap(\.self)
+    }
+}
 
 /// Creates a `Result` of pairs built out of two underlying `Results`.
 /// - Parameters:
