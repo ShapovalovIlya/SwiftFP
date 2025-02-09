@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension Array {
+extension Array {
     @inlinable
     func element(at index: Index) -> Element? {
         indices.contains(index) ? self[index] : nil
