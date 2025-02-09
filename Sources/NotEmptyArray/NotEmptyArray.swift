@@ -7,6 +7,13 @@
 
 import Foundation
 
+public extension Array {
+    @inlinable
+    func element(at index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}
+
 public struct NotEmptyArray<Element> {
     //MARK: - Properties
     public private(set) var head: Element
@@ -35,10 +42,15 @@ public struct NotEmptyArray<Element> {
     }
     
     //MARK: - Methods
+    @inlinable
     public var array: [Element] { CollectionOfOne(head) + tail }
     
+    /// Returns an `NotEmptyArray` containing the results of mapping the given closure over the sequence’s elements.
+    /// - Parameter transform: A mapping closure. transform accepts an element of this sequence as its parameter and
+    ///                        returns a transformed value of the same or of a different type.
+    /// - Returns: An `NotEmptyArray` containing the transformed elements of this sequence.
     @inlinable
-    public func mapNotEmpty<T, E>(
+    public func map<T, E>(
         _ transform: (Element) throws(E) -> T
     ) rethrows -> NotEmptyArray<T> where E: Error {
         NotEmptyArray<T>(
@@ -46,21 +58,39 @@ public struct NotEmptyArray<Element> {
             tail: try tail.map(transform)
         )
     }
-        
-    public mutating func append(contentsOf other: Self) {
-        tail.append(contentsOf: other.array)
+    
+    /// Adds the elements of a sequence to the end of the `NotEmptyArray`.
+    /// - Parameter sequence: The elements to append to the array.
+    public mutating func append(contentsOf sequence: some Sequence<Element>) {
+        tail.append(contentsOf: sequence)
     }
     
+    /// Adds a new element at the end of the `NotEmptyArray`.
+    /// - Parameter element: The element to append to the array.
     public mutating func append(_ element: Element) {
         tail.append(element)
     }
     
     @inlinable
-    public static func + (lhs: Self, rhs: Self) -> Self {
-        var result = lhs
-        result.append(contentsOf: rhs)
-        return result
+    public func element(at index: Int) -> Element? {
+        index == .zero ? head : tail.element(at: index - 1)
     }
+}
+
+public extension NotEmptyArray {
+    //MARK: - Arithmetics
+    @inlinable
+    static func += (lhs: inout Self, rhs: Self) -> Self {
+        lhs.append(contentsOf: rhs)
+        return lhs
+    }
+    
+    @inlinable
+    static func + (lhs: Self, rhs: Self) -> Self {
+        var sum = lhs
+        return sum += rhs
+    }
+    
 }
 
 //MARK: - Sequence

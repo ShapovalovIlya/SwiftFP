@@ -84,7 +84,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
         _ transform: (Failure) -> NewFailure
     ) -> Validated<Wrapped, NewFailure> where NewFailure: Swift.Error {
         mapErrors { errors in
-            errors.mapNotEmpty(transform)
+            errors.map(transform)
         }
     }
     
@@ -110,7 +110,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             return Validated<NewWrapped, Error> { try transform(wrapped) }
             
         case .invalid(let errors):
-            return .invalid(errors.mapNotEmpty(\.self))
+            return .invalid(errors.map(\.self))
         }
     }
     
