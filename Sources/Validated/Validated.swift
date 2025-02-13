@@ -84,7 +84,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
         _ transform: (Failure) -> NewFailure
     ) -> Validated<Wrapped, NewFailure> where NewFailure: Swift.Error {
         mapErrors { errors in
-            errors.mapNotEmpty(transform)
+            errors.map(transform)
         }
     }
     
@@ -110,7 +110,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
             return Validated<NewWrapped, Error> { try transform(wrapped) }
             
         case .invalid(let errors):
-            return .invalid(errors.mapNotEmpty(\.self))
+            return .invalid(errors.map(\.self))
         }
     }
     
@@ -223,22 +223,7 @@ public enum Validated<Wrapped, Failure> where Failure: Swift.Error {
 }
 
 //MARK: - Equatable
-extension Validated: Equatable where Wrapped: Equatable,
-                                     Failure: Equatable {
-    @inlinable
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case let (.valid(wrapped1) ,.valid(wrapped2)):
-            return wrapped1 == wrapped2
-            
-        case let (.invalid(errors1), .invalid(errors2)):
-            return errors1 == errors2
-            
-        default: return false
-        }
-    }
-}
-
+extension Validated: Equatable where Wrapped: Equatable, Failure: Equatable {}
 extension Validated: Sendable where Wrapped: Sendable, Failure: Sendable {}
 extension Validated: Hashable where Wrapped: Hashable, Failure: Hashable {}
 

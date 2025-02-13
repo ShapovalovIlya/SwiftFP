@@ -132,7 +132,7 @@ struct ValidatedTests {
     @Test(arguments: arguments)
     func mapErrors(_ state: Sut) async throws {
         let sut = state.mapErrors { errors in
-            errors.mapNotEmpty(MappedError.init)
+            errors.map(MappedError.init)
         }
         
         switch state {
@@ -187,7 +187,7 @@ struct ValidatedTests {
     @Test(arguments: arguments)
     func flatMapErrors(_ state: Sut) async throws {
         let sut = state.flatMapErrors { error in
-            let transformed = error.mapNotEmpty(MappedError.init)
+            let transformed = error.map(MappedError.init)
             return Validated<Int, MappedError>.invalid(transformed)
         }
         
