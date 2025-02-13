@@ -161,6 +161,17 @@ public struct Zipper<Element> {
 
 }
 
+//MARK: - CaseIterable
+public extension Zipper where Element: CaseIterable {
+    @inlinable init?(variant: Element, setCurrent: (Element) -> Bool) {
+        self.init(Element.allCases, setCurrent: setCurrent)
+    }
+    
+    @inlinable init?(variant: Element) where Element: Equatable {
+        self.init(variant: variant) { $0 == variant }
+    }
+}
+
 //MARK: - Sequence
 extension Zipper: Sequence {
     public func makeIterator() -> IndexingIterator<[Element]> {
