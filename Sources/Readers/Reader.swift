@@ -175,9 +175,9 @@ public struct Reader<Environment, Result>: Sendable {
     }
 }
 
-public extension Reader where Environment == Result {
+public extension Reader {
     @inlinable
-    static func + (_ lhs: Self, _ rhs: Self) -> Self {
+    static func + <T>(_ lhs: Self, _ rhs: Reader<Result, T>) -> Reader<Environment, T> {
         lhs.curry(rhs)
     }
 }
