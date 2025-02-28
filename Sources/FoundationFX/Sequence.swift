@@ -9,23 +9,6 @@ import Foundation
 
 public extension Sequence {
     
-    /// Asynchronously mutates the collection by applying the closure to each element.
-    /// Asynchronous operations are performed sequentially.
-    /// - Parameter transform: A mapping asynchronous closure. `transform` accepts an
-    ///                        element of this sequence as its parameter and returns a transformed
-    ///                        value of the same or of a different type.
-    /// - Returns: An array containing the transformed elements of this sequence.
-    @inlinable
-    func asyncMap<T>(
-        _ transform: @escaping (Element) async throws -> T
-    ) async rethrows -> [T] {
-        var values = [T]()
-        for element in self {
-            try await values.append(transform(element))
-        }
-        return values
-    }
-    
     @inlinable
     func asyncForEach(
         _ body: (Element) async throws -> Void
@@ -87,15 +70,53 @@ public extension Sequence {
 
 public extension Sequence where Element: Sendable {
     /// Asynchronously mutates the collection by applying the closure to each element.
-    /// Asynchronous operations are performed concurrently.
+    ///
+    /// Because asynchronous operations are performed concurrently, returned array may contain transformation results
+    /// in random order.
+    ///
+    /// - Parameter transform: A asynchronous closure accepts an element of the sequence as its parameter
+    ///                        and returns a transformed value of the same or of a different type.
+    /// - Returns: An array containing the transformed elements of this sequence.
     @inlinable
     func concurrentMap<T: Sendable>(
-        _ transform: @Sendable @escaping (Element) async throws -> T
+        _ transform: @escaping @Sendable (Element) async throws -> T
     ) async rethrows -> [T] {
-        try await map { element in
-            Task { try await transform(element) }
+        try await withThrowingTaskGroup(of: T.self, returning: [T].self) { group in
+            self.forEach { element in
+                group.addTask {
+                    try await transform(element)
+                }
+            }
+            return try await Array(group)
         }
-        .asyncMap { try await $0.value }
+    }
+    
+    /// Asynchronously mutates the collection by applying the closure to each element.
+    ///
+    /// Asynchronous operations are performed concurrently, but returned array contains elements in order.
+    ///
+    /// - Parameter transform: A asynchronous closure accepts an element of the sequence as its parameter
+    ///                        and returns a transformed value of the same or of a different type.
+    /// - Returns: An array containing the transformed elements of this sequence.
+    @inlinable
+    func asyncMap<T: Sendable>(
+        _ transform: @escaping @Sendable (Element) async throws -> T
+    ) async rethrows -> [T] {
+        let pairs = self.enumerated()
+        let results = try await withThrowingTaskGroup(
+            of: (Int, T).self,
+            returning: [Int: T].self
+        ) { group in
+            pairs.forEach { offset, element in
+                group.addTask {
+                    try await (offset, transform(element))
+                }
+            }
+            return try await Dictionary(group)
+        }
+        return pairs.compactMap { offset, _ in
+            results[offset]
+        }
     }
 }
 

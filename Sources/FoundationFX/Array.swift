@@ -7,13 +7,6 @@
 
 import Foundation
 
-public extension Dictionary {
-    @inlinable
-    init(@Array<(Key, Value)>.Builder _ build: () -> [(Key, Value)]) {
-        self.init(build(), uniquingKeysWith: { $1 })
-    }
-}
-
 public extension Set {
     @inlinable
     init(@Array<Element>.Builder _ build: () -> [Element]) {
@@ -25,6 +18,11 @@ public extension Array {
     //MARK: - init(_:)
     @inlinable
     init(@Builder _ build: () throws -> [Element]) rethrows { self = try build() }
+    
+    @inlinable
+    init<S: AsyncSequence>(_ s: S) async rethrows where S.Element == Element {
+        self = try await s.reduce(into: [Element]()) { $0.append($1) }
+    }
     
     //MARK: - Builder
     @resultBuilder
