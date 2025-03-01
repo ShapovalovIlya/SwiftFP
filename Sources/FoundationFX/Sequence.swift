@@ -108,7 +108,7 @@ public extension Sequence where Element: Sendable {
                     try await (offset, transform(element))
                 }
             }
-            let results = try await Dictionary(group)
+            let results = try await Dictionary(group, minimumCapacity: pairs.underestimatedCount)
             return pairs.compactMap { offset, _ in
                 results[offset]
             }

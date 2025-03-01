@@ -21,4 +21,16 @@ public extension Dictionary {
             partialResult[pair.0] = pair.1
         }
     }
+    
+    @inlinable
+    init<S: AsyncSequence>(
+        _ s: S,
+        minimumCapacity: Int
+    ) async rethrows where S.Element == (Key, Value) {
+        self = try await s.reduce(
+            into: [Key: Value](minimumCapacity: minimumCapacity)
+        ) { partialResult, pair in
+            partialResult[pair.0] = pair.1
+        }
+    }
 }
