@@ -102,20 +102,16 @@ public extension Sequence where Element: Sendable {
     func asyncMap<T: Sendable>(
         _ transform: @escaping @Sendable (Element) async throws -> T
     ) async rethrows -> [T] {
-        let pairs = self.enumerated()
-        let results = try await withThrowingTaskGroup(
-            of: (Int, T).self,
-            returning: [Int: T].self
-        ) { group in
+        try await withThrowingTaskGroup(of: (Int, T).self) { [pairs = enumerated()] group -> [T] in
             pairs.forEach { offset, element in
                 group.addTask {
                     try await (offset, transform(element))
                 }
             }
-            return try await Dictionary(group)
-        }
-        return pairs.compactMap { offset, _ in
-            results[offset]
+            let results = try await Dictionary(group)
+            return pairs.compactMap { offset, _ in
+                results[offset]
+            }
         }
     }
 }
