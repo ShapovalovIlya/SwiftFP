@@ -8,33 +8,6 @@
 import Foundation
 
 public extension Optional {
-    /// Evaluates the given asynchronous closure when this Optional instance is not nil, passing the unwrapped value as a parameter.
-    /// - Parameter asyncTransform: A asynchronous closure that takes the unwrapped value of the instance.
-    /// - Returns: The result of the given closure. If this instance is nil, returns nil.
-    @inlinable
-    func asyncFlatMap<U>(
-        _ transform: (Wrapped) async throws -> U?
-    ) async rethrows -> U? {
-        switch self {
-        case .none:
-            return .none
-            
-        case .some(let wrapped):
-            return try await transform(wrapped)
-        }
-    }
-    
-    /// Evaluates the given asynchronous closure when this Optional instance is not nil, passing the unwrapped value as a parameter.
-    /// - Parameter asyncTransform: A asynchronous closure that takes the unwrapped value of the instance.
-    /// - Returns: The result of the given closure. If this instance is nil, returns nil.
-    @inlinable
-    @discardableResult
-    func asyncMap<U>(
-        _ transform: (Wrapped) async throws -> U
-    ) async rethrows -> U? {
-        try await asyncFlatMap(transform)
-    }
-    
     /// Evaluates given  function when both `Optional` instances of function and value are not `nil`,
     /// passing the unwrapped value as a parameter.
     /// - Parameter functor: A `Optional` function that takes the unwrapped value of the instance.
@@ -46,20 +19,6 @@ public extension Optional {
     ) rethrows -> Optional<NewWrapped> {
         try functor.flatMap { transform in
             try self.map(transform)
-        }
-    }
-    
-    /// Evaluates given asynchronous function when both `Optional` instances of function and value are not `nil`,
-    /// passing the unwrapped value as a parameter.
-    /// - Parameter functor: A `Optional`asynchronous function that takes the unwrapped value of the instance.
-    /// - Returns: The result of the given function. If some of this instances is nil, returns nil.
-    @inlinable
-    @discardableResult
-    func asyncApply<NewWrapped>(
-        _ functor: Optional<@Sendable (Wrapped) async throws -> NewWrapped>
-    ) async rethrows -> Optional<NewWrapped> {
-        try await functor.asyncFlatMap { transform in
-            try await self.asyncMap(transform)
         }
     }
        
@@ -101,6 +60,49 @@ public extension Optional {
         switch self {
         case .none: return other
         case .some(let wrapped): return wrapped
+        }
+    }
+}
+
+public extension Optional where Wrapped: Sendable {
+    /// Evaluates the given asynchronous closure when this Optional instance is not nil, passing the unwrapped value as a parameter.
+    /// - Parameter asyncTransform: A asynchronous closure that takes the unwrapped value of the instance.
+    /// - Returns: The result of the given closure. If this instance is nil, returns nil.
+    @inlinable
+    func asyncFlatMap<U>(
+        _ transform: @Sendable (Wrapped) async throws -> U?
+    ) async rethrows -> U? {
+        switch self {
+        case .none:
+            return .none
+            
+        case .some(let wrapped):
+            return try await transform(wrapped)
+        }
+    }
+    
+    /// Evaluates the given asynchronous closure when this Optional instance is not nil, passing the unwrapped value as a parameter.
+    /// - Parameter asyncTransform: A asynchronous closure that takes the unwrapped value of the instance.
+    /// - Returns: The result of the given closure. If this instance is nil, returns nil.
+    @inlinable
+    @discardableResult
+    func asyncMap<U>(
+        _ transform: @Sendable (Wrapped) async throws -> U
+    ) async rethrows -> U? {
+        try await asyncFlatMap(transform)
+    }
+    
+    /// Evaluates given asynchronous function when both `Optional` instances of function and value are not `nil`,
+    /// passing the unwrapped value as a parameter.
+    /// - Parameter functor: A `Optional`asynchronous function that takes the unwrapped value of the instance.
+    /// - Returns: The result of the given function. If some of this instances is nil, returns nil.
+    @inlinable
+    @discardableResult
+    func asyncApply<NewWrapped>(
+        _ functor: Optional<@Sendable (Wrapped) async throws -> NewWrapped>
+    ) async rethrows -> Optional<NewWrapped> {
+        try await functor.asyncFlatMap { transform in
+            try await self.asyncMap(transform)
         }
     }
 }
