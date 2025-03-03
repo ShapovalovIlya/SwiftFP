@@ -85,7 +85,6 @@ public extension Optional where Wrapped: Sendable {
     /// - Parameter asyncTransform: A asynchronous closure that takes the unwrapped value of the instance.
     /// - Returns: The result of the given closure. If this instance is nil, returns nil.
     @inlinable
-    @discardableResult
     func asyncMap<U>(
         _ transform: @Sendable (Wrapped) async throws -> U
     ) async rethrows -> U? {
