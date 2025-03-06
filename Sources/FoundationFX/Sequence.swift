@@ -69,6 +69,7 @@ public extension Sequence {
 }
 
 public extension Sequence where Element: Sendable {
+    
     /// Asynchronously mutates the collection by applying the closure to each element.
     ///
     /// Because asynchronous operations are performed concurrently, returned array may contain transformation results
@@ -112,6 +113,18 @@ public extension Sequence where Element: Sendable {
             return pairs.compactMap { offset, _ in
                 results[offset]
             }
+        }
+    }
+    
+    @inlinable
+    func concurrentForEach(
+        _ block: @escaping @Sendable (Element) async throws -> Void
+    ) async rethrows {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            self.forEach { element in
+                group.addTask { try await block(element) }
+            }
+            try await group.waitForAll()
         }
     }
 }

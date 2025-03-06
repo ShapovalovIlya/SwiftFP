@@ -73,4 +73,21 @@ struct FoundationTest {
                 )
         ) // 10.385 sec - old, 0.103 sec - new
     }
+    
+    @Test func sequenceConcurrentForEach() async throws {
+        let duration = try await ContinuousClock().measure {
+            try await (0...100).asyncForEach { _ in
+                try await Task.sleep(for: .milliseconds(100))
+                
+            }
+        }
+        print(
+            #function
+                .appending(" ")
+                .appending(
+                    duration
+                        .formatted(.units(allowed: [.seconds, .milliseconds]))
+                )
+        ) // 10.385 sec - old, 0.103 sec - new
+    }
 }
