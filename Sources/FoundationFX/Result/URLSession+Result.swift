@@ -15,6 +15,7 @@ public extension URLSession {
     /// - Parameter request: The URLRequest for which to load data.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func result(
         for request: URLRequest
     ) async -> Result<(data: Data, response: URLResponse), Error> {
@@ -26,6 +27,7 @@ public extension URLSession {
     /// - Parameter url: The URL for which to load data.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func result(
         from url: URL
     ) async -> Result<(data: Data, response: URLResponse), Error> {
@@ -38,6 +40,7 @@ public extension URLSession {
     /// - Parameter fileURL: File to upload.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func upload(
         for request: URLRequest,
         fromFile fileURL: URL
@@ -52,6 +55,7 @@ public extension URLSession {
     /// - Parameter bodyData: Data to upload.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func upload(
         for request: URLRequest,
         from bodyData: Data
@@ -70,6 +74,7 @@ public extension URLSession {
     /// - Parameter delegate: Task-specific delegate.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func result(
         for request: URLRequest,
         delegate: (any URLSessionTaskDelegate)? = nil
@@ -83,6 +88,7 @@ public extension URLSession {
     /// - Parameter delegate: Task-specific delegate.
     /// - Returns: `Result` object, contains Data and response or `Error`.
     @inlinable
+    @Sendable
     func data(
         from url: URL,
         delegate: (any URLSessionTaskDelegate)? = nil
