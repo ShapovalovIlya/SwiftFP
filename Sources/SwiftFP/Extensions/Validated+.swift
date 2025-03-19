@@ -13,7 +13,7 @@ public extension Validated {
     typealias Parser = Reader<Success, Result<Success, Failure>>
     
     @inlinable
-    init(with state: Success, parsers: [Parser]) {
+    init(_ state: Success, parsers: [Parser]) {
         self.init(
             reduce: state,
             validators: parsers.map { $0.apply(_:) }
