@@ -286,10 +286,13 @@ public enum Validated<Success, Failure> where Failure: Swift.Error {
         self.zip(result)
             .map(transform)
     }
-
+    
     @inlinable
-    public init(_ state: Success, @Validator build: () -> [Validator.Element]) {
-        let errors = build()
+    public init(
+        reduce state: Success,
+        validators: [(Success) -> Result<Success, Failure>]
+    ) {
+        let errors = validators
             .map { $0(state) }
             .reduce(into: [Failure]()) { errors, result in
                 switch result {
@@ -302,6 +305,11 @@ public enum Validated<Success, Failure> where Failure: Swift.Error {
             return
         }
         self = .invalid(NotEmptyArray(errors)!)
+    }
+    
+    @inlinable
+    public init(_ state: Success, @Validator build: () -> [Validator.Element]) {
+        self.init(reduce: state, validators: build())
     }
 }
 
@@ -320,10 +328,24 @@ public extension Validated {
         public static func buildBlock(_ components: Element...) -> [Element] {
             components
         }
+        
+        public static func buildExpression(_ expression: @escaping Element) -> [Element] {
+            [expression]
+        }
+        
+        @inlinable
+        public static func buildBlock(_ components: [Element]...) -> [Element] {
+            components.flatMap(\.self)
+        }
 
         @inlinable
         public static func buildOptional(_ component: [Element]?) -> [Element] {
             component ?? []
+        }
+        
+        @inlinable
+        public static func buildArray(_ components: [[Element]]) -> [Element] {
+            components.flatMap(\.self)
         }
     }
 }
