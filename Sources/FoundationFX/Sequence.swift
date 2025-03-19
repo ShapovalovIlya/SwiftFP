@@ -8,7 +8,7 @@
 import Foundation
 
 public extension Sequence {
-    
+
     @inlinable
     func asyncForEach(
         _ body: (Element) async throws -> Void

@@ -100,6 +100,14 @@ extension NotEmptyArray: Sequence {
     }
 }
 
+extension NotEmptyArray: CustomStringConvertible {
+    @inlinable
+    public var description: String {
+        let summ = CollectionOfOne(head) + tail
+        return summ.description
+    }
+}
+
 extension NotEmptyArray: Equatable where Element: Equatable {}
 extension NotEmptyArray: Hashable where Element: Hashable {}
 extension NotEmptyArray: Sendable where Element: Sendable {}

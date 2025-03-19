@@ -56,7 +56,7 @@ struct ValidatedTests {
     
     @Test
     func catchInit() async throws {
-        let sut = Validated(catch: { 1 })
+        let sut = Validated(catching: { 1 })
         
         switch sut {
         case .valid(let value): #expect(value == 1)
@@ -90,6 +90,30 @@ struct ValidatedTests {
             
         default: throw NSError()
         }
+    }
+    
+    @Test func initWithValidations() async throws {
+        func validationFail(_ val: Int) -> Result<Int, StubError> {
+            return .failure(.one)
+        }
+        func validationSuccess(_ val: Int) -> Result<Int, StubError> {
+            return .success(1)
+        }
+        
+        let sut = Validated(1) {
+            validationFail
+            validationSuccess
+            validationFail
+        }
+        
+        let expected = Validated<Int, ValidatedTests.StubError>.invalid(
+            NotEmptyArray(
+                head: StubError.one,
+                tail: [StubError.one]
+            )
+        )
+        
+        #expect(sut == expected)
     }
     
     //MARK: - joined
@@ -146,7 +170,7 @@ struct ValidatedTests {
     
     @Test(arguments: arguments)
     func mapEachError(_ state: Sut) async throws {
-        let sut = state.mapEachError(MappedError.init)
+        let sut = state.mapError(MappedError.init)
         
         switch state {
         case .valid(let wrapped):
@@ -353,36 +377,7 @@ struct ValidatedTests {
         }
     }
     
-    //MARK: - accumulate
-    @Test func accumulate() async throws {
-        let sut = Sut.valid(1).accumulate { val in
-            Sut.valid(val)
-            ValidationResult.success(val)
-        }
-        
-        switch sut {
-        case .valid(let result): #expect(result == 1)
-        case .invalid: throw TestError()
-        }
-    }
-    
-    @Test
-    func accumulateErrors() async throws {
-        let sut = Sut.valid(1).accumulate { _ in
-            Sut.valid(1)
-            ValidationResult.success(1)
-            ValidationResult.failure(.one)
-            Sut.failed(.two)
-        }
-        
-        switch sut {
-        case .valid:
-            throw TestError()
-            
-        case .invalid(let errors):
-            #expect(errors.array == [.one, .two])
-        }
-    }
+   
     
     //MARK: - Helpers
     func asyncAddOne(_ val: Int) async -> Int { val + 1 }

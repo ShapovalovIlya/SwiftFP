@@ -82,4 +82,10 @@ struct NotEmptyArrayTests {
         
         #expect(element == nil)
     }
+    
+    @Test func description() async throws {
+        let sut = Sut(head: 1, tail: [2, 3]).description
+        
+        #expect([1,2,3].description == sut)
+    }
 }
