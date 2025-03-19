@@ -108,6 +108,12 @@ extension NotEmptyArray: CustomStringConvertible {
     }
 }
 
+extension NotEmptyArray: CustomReflectable {
+    public var customMirror: Mirror {
+        Mirror(self, unlabeledChildren: array, displayStyle: .collection)
+    }
+}
+
 extension NotEmptyArray: Equatable where Element: Equatable {}
 extension NotEmptyArray: Hashable where Element: Hashable {}
 extension NotEmptyArray: Sendable where Element: Sendable {}
