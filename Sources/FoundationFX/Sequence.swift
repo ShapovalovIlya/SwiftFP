@@ -66,6 +66,16 @@ public extension Sequence {
         Dictionary(grouping: self, by: { $0[keyPath: keyPath] })
     }
     
+    @inlinable
+    func unique<T: Hashable>(
+        _ transform: (Element) throws -> T
+    ) rethrows -> Set<T> {
+        try reduce(
+            into: Set<T>(minimumCapacity: underestimatedCount)
+        ) { partialResult, element in
+            partialResult.insert(try transform(element))
+        }
+    }
 }
 
 public extension Sequence where Element: Sendable {
