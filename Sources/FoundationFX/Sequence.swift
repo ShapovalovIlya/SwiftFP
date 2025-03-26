@@ -67,13 +67,13 @@ public extension Sequence {
     }
     
     @inlinable
-    func unique<T: Hashable>(
-        _ transform: (Element) throws -> T
+    func set<T: Hashable>(
+        of elementProvider: (Element) throws -> T
     ) rethrows -> Set<T> {
         try reduce(
             into: Set<T>(minimumCapacity: underestimatedCount)
         ) { partialResult, element in
-            partialResult.insert(try transform(element))
+            partialResult.insert(try elementProvider(element))
         }
     }
 }
