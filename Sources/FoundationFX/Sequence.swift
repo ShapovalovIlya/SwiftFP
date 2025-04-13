@@ -8,6 +8,12 @@
 import Foundation
 
 public extension Sequence {
+    /// An asynchronous sequence containing the same elements as this sequence,
+    /// but on which operations, such as `map` and `filter`, are
+    /// implemented asynchronously.
+    @inlinable var asyncAdapter: AsyncAdapterSequence<Self> {
+        AsyncAdapterSequence(self)
+    }
 
     @inlinable
     func asyncForEach(
