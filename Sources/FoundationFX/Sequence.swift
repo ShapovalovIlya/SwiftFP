@@ -22,30 +22,6 @@ public extension Sequence {
         for element in self { try await body(element) }
     }
     
-    /// Returns the elements of the sequence, sorted using the given predicate returned by key path as the comparison between elements.
-    ///
-    /// An example of sorting a collection of songs by key property:
-    ///
-    ///     playlist.songs.sorted(by: \.name)
-    ///     playlist.songs.sorted(by: \.dateAdded)
-    ///     playlist.songs.sorted(by: \.ratings.worldWide)
-    ///
-    /// - Parameters:
-    ///   - keyPath: A key path from the `Element` type to a specific resulting value type.
-    ///   - ascending: A condition indicating how elements are sorted, in ascending order or not.
-    @inlinable
-    func sorted<T: Comparable>(
-        by keyPath: KeyPath<Element, T>,
-        ascending: Bool = true
-    ) -> [Element] {
-        sorted { lhs, rhs in
-            if ascending {
-                return lhs[keyPath: keyPath] < rhs[keyPath: keyPath]
-            }
-            return lhs[keyPath: keyPath] > rhs[keyPath: keyPath]
-        }
-    }
-    
     /// Creates a dictionary whose keys are the groupings returned by the
     /// given closure and whose values are arrays of the elements that returned
     /// each key.
