@@ -23,7 +23,7 @@ struct ZipperTestsTests {
         #expect(sut.count == 3)
         #expect(sut.first == 1)
         #expect(sut.last == 3)
-        #expect(sut.array == [1,2,3])
+        #expect(sut.elements == [1,2,3])
     }
     
     @Test
@@ -48,7 +48,7 @@ struct ZipperTestsTests {
     func mapZipper() async throws {
         let sut = sut.mapZipper(\.description)
         
-        #expect(sut.array == ["1","2","3"])
+        #expect(sut.elements == ["1","2","3"])
     }
 
     @Test
@@ -60,6 +60,13 @@ struct ZipperTestsTests {
         #expect(sut.previous == [1])
         #expect(sut.current == 2)
         #expect(sut.next == [3])
+        
+        sut.forward()
+        
+        #expect(sut.previous == [1, 2])
+        #expect(sut.current == 3)
+        #expect(sut.next == [])
+        #expect(sut.isAtEnd)
     }
     
     @Test
@@ -70,6 +77,7 @@ struct ZipperTestsTests {
         sut.backward()
         
         #expect(sut.previous.isEmpty)
+        #expect(sut.isAtStart)
         #expect(sut.current == 1)
         #expect(sut.next == [2,3])
     }

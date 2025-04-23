@@ -8,157 +8,109 @@
 import Foundation
 
 public struct Zipper<Element> {
-    @usableFromInline var _previous: [Element]
-    @usableFromInline var _current: Element
-    @usableFromInline var _next: [Element]
+    public typealias SubSequence = [Element].SubSequence
+    public typealias Index = [Element].Index
+    
+    public private(set) var elements: [Element]
+    @usableFromInline var cursor: Int
     
     //MARK: - init(_:)
-    @inlinable
+    private init(elements: [Element], cursor: Int) {
+        self.elements = elements
+        self.cursor = cursor
+    }
+    
     public init(previous: [Element], current: Element, next: [Element]) {
-        self._previous = previous
-        self._current = current
-        self._next = next
+        self.elements = previous + CollectionOfOne(current) + next
+        self.cursor = previous.count
     }
     
-    @inlinable
     public init(single: Element) {
-        self.init(previous: [], current: single, next: [])
+        self.init(elements: [single], cursor: 0)
     }
     
-    @inlinable
     public init?<S>(_ sequence: S) where S: Sequence<Element> {
-        var iterator = sequence.makeIterator()
-        guard let first = iterator.next() else { return nil }
-        var other = [Element]()
-        while let element = iterator.next() {
-            other.append(element)
-        }
-        self.init(previous: [], current: first, next: other)
+        let elements = Array(sequence)
+        if elements.isEmpty { return nil }
+        self.init(elements: elements, cursor: 0)
     }
     
-    @inlinable
     public init?<S>(
         _ sequence: S,
         setCurrent: (Element) -> Bool
     ) where S: Sequence<Element> {
-        var iterator = sequence.makeIterator()
-        
-        var current: Element?
-        var previous = [Element]()
-        var next = [Element]()
-        
-        while let element = iterator.next() {
-            if current != nil {
-                next.append(element)
-                continue
-            }
-            if setCurrent(element) {
-                current = element
-                continue
-            }
-            previous.append(element)
+        let elements = Array(sequence)
+        guard let cursor = elements.firstIndex(where: setCurrent) else {
+            return nil
         }
-        
-        guard let current else { return nil }
-        self.init(previous: previous, current: current, next: next)
+        self.init(elements: elements, cursor: cursor)
     }
     
     //MARK: - Public methods
     @inlinable
-    @inline(__always)
-    public var previous: [Element] { _previous }
+    public var indices: Range<Index> { elements.indices }
     
     @inlinable
-    @inline(__always)
-    public var current: Element { _current }
+    public var previous: SubSequence { elements.prefix(upTo: cursor) }
     
     @inlinable
-    @inline(__always)
-    public var next: [Element] { _next }
+    public var current: Element { elements[cursor] }
     
     @inlinable
-    @inline(__always)
-    public var count: Int { previous.count + 1 + next.count }
-    
-    @inlinable
-    public var array: [Element] {
-        var temp = _previous
-        temp += CollectionOfOne(_current)
-        temp += _next
-        return temp
+    public var next: SubSequence {
+        if cursor == elements.indices.last {
+            return elements.suffix(0)
+        }
+        return elements.suffix(from: cursor + 1)
     }
     
     @inlinable
-    @inline(__always)
-    public var first: Element {
-        if let first = _previous.first { return first }
-        return _current
-    }
+    public var count: Int { elements.count }
     
     @inlinable
-    @inline(__always)
-    public var last: Element {
-        if let last = _next.last { return last }
-        return _current
-    }
+    public var first: Element { elements.first! }
     
     @inlinable
-    @inline(__always)
-    public var isAtEnd: Bool { _next.isEmpty }
+    public var last: Element { elements.last! }
     
     @inlinable
-    @inline(__always)
-    public var isAtStart: Bool { _previous.isEmpty }
+    public var isAtEnd: Bool { indices.last == cursor }
+    
+    @inlinable
+    public var isAtStart: Bool { elements.startIndex == cursor }
     
     @inlinable
     public func mapZipper<T>(
         _ transform: (Element) throws -> T
     ) rethrows -> Zipper<T> {
         try Zipper<T>(
-            previous: _previous.map(transform),
-            current: transform(_current),
-            next: _next.map(transform)
+            previous: previous.map(transform),
+            current: transform(current),
+            next: next.map(transform)
         )
     }
     
     @inlinable
     public mutating func forward() {
-        if _next.isEmpty { return }
-        _previous.append(_current)
-        _current = _next.removeFirst()
+        if indices.last == cursor { return }
+        cursor = elements.index(after: cursor)
     }
     
     @inlinable
     public mutating func backward() {
-        if _previous.isEmpty { return }
-        _next.insert(_current, at: _next.startIndex)
-        _current = _previous.removeLast()
+        if startIndex == cursor { return }
+        cursor = elements.index(before: cursor)
     }
     
-    @inlinable
     public mutating func append(_ newElement: Element) {
-        _next.append(newElement)
+        elements.append(newElement)
     }
     
-    @inlinable
     public mutating func append(
         contentsOf sequence: some Sequence<Element>
     ) {
-        _next.append(contentsOf: sequence)
+        elements.append(contentsOf: sequence)
     }
-    
-    @inlinable
-    public mutating func addBeforeCurrent(
-        contentsOf sequence: some Sequence<Element>
-    ) {
-        _previous.append(contentsOf: sequence)
-    }
-    
-    @inlinable
-    public mutating func addBeforeCurrent(_ newElement: Element) {
-        _previous.append(newElement)
-    }
-
 }
 
 //MARK: - CaseIterable
@@ -175,31 +127,44 @@ public extension Zipper where Element: CaseIterable {
 //MARK: - Sequence
 extension Zipper: Sequence {
     public func makeIterator() -> IndexingIterator<[Element]> {
-        array.makeIterator()
+        elements.makeIterator()
+    }
+}
+
+//MARK: - Collection
+extension Zipper: Collection {
+    
+    @inlinable
+    public var startIndex: Index {
+        elements.startIndex
+    }
+    
+    @inlinable
+    public var endIndex: Index {
+        elements.endIndex
+    }
+    
+    public func index(after i: Index) -> Index {
+        elements.index(after: i)
+    }
+    
+    public subscript(bounds: Range<Index>) -> SubSequence {
+        elements[bounds]
+    }
+    
+    public subscript(position: Index) -> Element {
+        get { elements[position] }
+        set { elements[position] = newValue }
     }
 }
 
 extension Zipper: Equatable where Element: Equatable {
-    @inlinable
+    
     public mutating func move(to predicate: (Element) -> Bool) {
-        if predicate(_current) { return }
-        if let index = _previous.firstIndex(where: predicate) {
-            let suffIndex = _previous.index(after: index)
-            var suffix = _previous.suffix(from: suffIndex)
-            _previous.removeSubrange(suffIndex..<_previous.endIndex)
-            suffix.append(_current)
-            _current = _previous.remove(at: index)
-            _next.insert(contentsOf: suffix, at: _next.startIndex)
+        guard let destination = elements.firstIndex(where: predicate) else {
             return
         }
-        guard let index = _next.firstIndex(where: predicate) else {
-            return
-        }
-        var prefix = _next.prefix(through: index)
-        if prefix.isEmpty { return }
-        _previous.append(_current)
-        _current = prefix.removeLast()
-        _previous.append(contentsOf: prefix)
+        cursor = destination
     }
 }
 
