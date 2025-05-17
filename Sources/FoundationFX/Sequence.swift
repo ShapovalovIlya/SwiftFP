@@ -58,6 +58,41 @@ public extension Sequence {
             partialResult.insert(try elementProvider(element))
         }
     }
+    
+    @inlinable
+    func sorted<T: Comparable>(
+        by keyPath: KeyPath<Element, T>,
+        using comparator: (T, T) throws -> Bool
+    ) rethrows -> [Element] {
+        try sorted { lhs, rhs in
+            try comparator(lhs[keyPath: keyPath], rhs[keyPath: keyPath])
+        }
+    }
+    
+    /// Returns the elements of the sequence, sorted using the given predicate returned by key path
+    /// as the comparison between elements.
+    ///
+    /// An example of sorting a collection of songs by key property:
+    ///
+    ///```swift
+    /// playlist.songs.sorted(by: \.name)
+    /// playlist.songs.sorted(by: \.dateAdded)
+    /// playlist.songs.sorted(by: \.ratings.worldWide)
+    ///```
+    ///
+    /// - Parameters:
+    ///   - keyPath: A key path from the `Element` type to a specific resulting value type.
+    ///   - ascending: A condition indicating how elements are sorted, in ascending order or not.
+    @inlinable
+    func sorted<T: Comparable>(
+        by keyPath: KeyPath<Element, T>,
+        ascending: Bool = true
+    ) -> [Element] {
+        switch ascending {
+        case true: return sorted(by: keyPath, using: <)
+        case false: return sorted(by: keyPath, using: >)
+        }
+    }
 }
 
 public extension Sequence where Element: Sendable {

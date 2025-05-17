@@ -20,20 +20,34 @@ fileprivate struct Person: Equatable {
     ]
 }
 
-
+struct SortDescriptorTest {
+    @Test func initWithClosure() async throws {
+        let sut = Person.test.sorted(
+            by: Sort.Descriptor<Person>(.descending) { lhs, rhs in
+                if lhs.age != rhs.age {
+                    return lhs.age > rhs.age ? .orderedDescending : .orderedAscending
+                }
+                return .orderedSame
+            }
+        )
+        
+        let expected = Person.test.sorted { $0.age > $1.age }
+        
+        #expect(sut == expected)
+    }
+}
 
 struct SortTest {
 
-//    @Test func sortedUsingClosureComparator() async throws {
-//        let sut = Person.test.sorted(by: [
-//            { $0.age > $1.age },
-//            { $0.name < $0.name }
-//        ])
-//        
-//        let expected = Person.test.sorted {
-//            $0.age > $1.age
-//        }
-//        #expect(sut == expected)
-//    }
+    @Test func sortedBySingleDescriptor() async throws {
+        let sut = Person.test.sorted(
+            by: Sort.Descriptor.descending(\.age)
+        )
+        
+        let expected = Person.test.sorted {
+            $0.age > $1.age
+        }
+        #expect(sut == expected)
+    }
 
 }
