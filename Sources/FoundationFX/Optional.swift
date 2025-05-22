@@ -109,19 +109,41 @@ public extension Optional where Wrapped: Sendable {
 public extension Optional where Wrapped: BinaryInteger {
     
     /// If this instance is `nil`, returns zero.
-    @inlinable var orZero: Wrapped { replaceNil(.zero) }
+    @inlinable var orZero: Wrapped {
+        replaceNil(.zero)
+    }
 }
 
 public extension Optional where Wrapped: BinaryFloatingPoint {
     
     /// If this instance is `nil`, returns zero.
-    @inlinable var orZero: Wrapped { replaceNil(.zero) }
+    @inlinable var orZero: Wrapped {
+        replaceNil(.zero)
+    }
 }
 
 public extension Optional where Wrapped == String {
     
     /// If this instance is `nil`, returns empty string.
-    @inlinable var orEmpty: Wrapped { replaceNil(String()) }
+    @inlinable var orEmpty: Wrapped {
+        replaceNil(String())
+    }
+}
+
+extension Optional where Wrapped: ExpressibleByArrayLiteral {
+    
+    /// If this instance is `nil`, returns empty collection.
+    @inlinable var orEmpty: Wrapped {
+        replaceNil([])
+    }
+}
+
+extension Optional where Wrapped: ExpressibleByDictionaryLiteral {
+    
+    /// If this instance is `nil`, returns empty collection.
+    @inlinable var orEmpty: Wrapped {
+        replaceNil([:])
+    }
 }
 
 public extension Optional where Wrapped == Bool {
