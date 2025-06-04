@@ -130,7 +130,7 @@ public extension Optional where Wrapped == String {
     }
 }
 
-extension Optional where Wrapped: ExpressibleByArrayLiteral {
+public extension Optional where Wrapped: ExpressibleByArrayLiteral {
     
     /// If this instance is `nil`, returns empty collection.
     @inlinable var orEmpty: Wrapped {
@@ -138,7 +138,7 @@ extension Optional where Wrapped: ExpressibleByArrayLiteral {
     }
 }
 
-extension Optional where Wrapped: ExpressibleByDictionaryLiteral {
+public extension Optional where Wrapped: ExpressibleByDictionaryLiteral {
     
     /// If this instance is `nil`, returns empty collection.
     @inlinable var orEmpty: Wrapped {
