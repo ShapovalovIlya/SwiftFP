@@ -53,16 +53,16 @@ let package = Package(
         .target(
             name: "SwiftFP",
             dependencies: [
-                Submodule.Either.dependency,
-                Submodule.Monad.dependency,
-                Submodule.NotEmptyArray.dependency,
-                Submodule.Validated.dependency,
-                Submodule.Zipper.dependency,
-                Submodule.Readers.dependency,
-                Submodule.Effects.dependency,
-                Submodule.FoundationFX.dependency,
-                Submodule.State.dependency,
-                Submodule.Future.dependency,
+                Submodule.Either.asDependency,
+                Submodule.Monad.asDependency,
+                Submodule.NotEmptyArray.asDependency,
+                Submodule.Validated.asDependency,
+                Submodule.Zipper.asDependency,
+                Submodule.Readers.asDependency,
+                Submodule.Effects.asDependency,
+                Submodule.FoundationFX.asDependency,
+                Submodule.State.asDependency,
+                Submodule.Future.asDependency,
             ]
         ),
         .testTarget(
@@ -85,50 +85,42 @@ fileprivate enum Submodule: String {
     case State
     case Future
     
-    @inlinable
-    @inline(__always)
-    var name: String { rawValue }
+    @inlinable var name: String { rawValue }
     
     @inlinable
-    @inline(__always)
-    var dependency: Target.Dependency { .init(stringLiteral: name) }
+    var asDependency: Target.Dependency {
+        Target.Dependency(stringLiteral: name)
+    }
     
     @inlinable
-    @inline(__always)
-    var target: Target {
+    var dependencies: [Target.Dependency] {
         switch self {
-        case .Validated:
-                .target(
-                    name: name,
-                    dependencies: [
-                        Submodule.NotEmptyArray.dependency
-                    ],
-                    swiftSettings: [
-                        .enableExperimentalFeature("StrictConcurrency")
-                    ]
-                )
-            
-        case .FoundationFX:
-                .target(
-                    name: name,
-                    dependencies: [
-                        Submodule.Either.dependency
-                    ],
-                    swiftSettings: [
-                        .enableExperimentalFeature("StrictConcurrency")
-                    ]
-                )
-        default:
-                .target(
-                    name: name,
-                    swiftSettings: [
-                        .enableExperimentalFeature("StrictConcurrency")
-                    ]
-                )
+        case .Validated: [
+            Submodule.NotEmptyArray.asDependency
+        ]
+        case .FoundationFX: [
+            Submodule.Either.asDependency
+        ]
+        default: []
         }
     }
     
     @inlinable
-    @inline(__always)
+    var swiftSettings: [SwiftSetting] {
+        [
+            .enableExperimentalFeature("StrictConcurrency")
+        ]
+    }
+    
+    @inlinable
+    var target: Target {
+        Target.target(
+            name: name,
+            dependencies: dependencies,
+            swiftSettings: swiftSettings
+        )
+    }
+    
+    @inlinable
     var product: Product { .library(name: name, targets: [name]) }
 }

@@ -82,6 +82,48 @@ struct OptionalTestNew {
         case .none: #expect(sut == "")
         }
     }
+    
+    @Test
+    func optionalZip_someValueWithSomeValue() throws {
+        let sut = Optional.zip(1, "a")
+        
+        let unwrapped = try #require(sut)
+        
+        #expect(unwrapped.0 == 1)
+        #expect(unwrapped.1 == "a")
+    }
+    
+    @Test
+    func optionalZip_someValueWithNil() {
+        let sut = Optional.zip(1, Optional<String>.none)
+        
+        #expect(sut == nil)
+    }
+    
+    @Test
+    func optionalZip_nilWithSomeValue() {
+        let sut = Optional.zip(Optional<Int>.none, "a")
+        
+        #expect(sut == nil)
+    }
+    
+    @Test
+    func optionalZip3Values_someValues() async throws {
+        let sut = Optional.zip(1, "baz", 1.1)
+        
+        let unwrapped = try #require(sut)
+        
+        #expect(unwrapped.0 == 1)
+        #expect(unwrapped.1 == "baz")
+        #expect(unwrapped.2 == 1.1)
+    }
+    
+    @Test
+    func optionalZip3Values_someValuesWithNil() async throws {
+        let sut = Optional.zip(1, "baz", Optional<Int>.none)
+        
+        #expect(sut == nil)
+    }
 }
 
 final class OptionalTests: XCTestCase {
@@ -176,34 +218,6 @@ final class OptionalTests: XCTestCase {
     func test_zip_nilWithSomeValue() {
         let other = Optional(1)
         let sut = Optional<String>.none.zip(other)
-        
-        XCTAssertNil(sut)
-    }
-    
-    func test_zipGlobal_someValueWithSomeValue() {
-        let sut = zip(
-            Optional(1),
-            Optional("a")
-        )
-        
-        XCTAssertEqual(sut?.0, 1)
-        XCTAssertEqual(sut?.1, "a")
-    }
-    
-    func test_zipGlobal_someValueWithNil() {
-        let sut = zip(
-            Optional(1),
-            Optional<String>.none
-        )
-        
-        XCTAssertNil(sut)
-    }
-    
-    func test_zipGlobal_nilWithSomeValue() {
-        let sut = zip(
-            Optional<Int>.none,
-            Optional("a")
-        )
         
         XCTAssertNil(sut)
     }

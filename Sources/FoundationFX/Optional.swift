@@ -62,6 +62,26 @@ public extension Optional {
         case .some(let wrapped): return wrapped
         }
     }
+    
+    /// Zip two optional values.
+    /// - Parameters:
+    ///   - lhs: first optional value to combine
+    ///   - rhs: second optional value to combine
+    /// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
+    @inlinable
+    static func zip<Other>(_ lhs: Wrapped?, _ rhs: Other?) -> (Wrapped, Other)? { lhs.zip(rhs) }
+    
+    @inlinable
+    static func zip<A, B>(
+        _ w: Wrapped?,
+        _ a: A?,
+        _ b: B?
+    ) -> (Wrapped, A, B)? {
+        Optional
+            .zip(w, a)
+            .zip(b)
+            .map { ($0.0, $0.1, $1) }
+    }
 }
 
 public extension Optional where Wrapped: Sendable {
@@ -154,11 +174,3 @@ public extension Optional where Wrapped == Bool {
     /// If this instance is `nil`, returns `true`
     @inlinable var orTrue: Wrapped { self.replaceNil(true) }
 }
-
-/// Zip two optional values.
-/// - Parameters:
-///   - lhs: first optional value to combine
-///   - rhs: second optional value to combine
-/// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
-@inlinable
-public func zip<A, B>(_ lhs: A?, _ rhs: B?) -> (A, B)? { lhs.zip(rhs) }
