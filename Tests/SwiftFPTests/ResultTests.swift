@@ -11,9 +11,73 @@ import SwiftFP
 
 @Suite("Result tests")
 struct ResultTestsNew {
-    typealias Sut = Result<Int, Error>
+    enum TestError: Error, Equatable {
+        case firstCase
+        case failedTest
+    }
     
+    typealias Sut<T> = Result<T, TestError>
     
+    @Test func typeZip_twoSuccess() throws {
+        let sut = Result.zip(
+            Sut<Int>.success(1),
+            Sut<String>.success("baz")
+        )
+        
+        let unwrapped = try sut.get()
+        
+        #expect(unwrapped.0 == 1)
+        #expect(unwrapped.1 == "baz")
+    }
+    
+    @Test func typeZip_successAndFailure() throws {
+        let sut = Result.zip(
+            Sut<Int>.success(1),
+            Sut<String>.failure(.firstCase)
+        )
+        
+        #expect(throws: TestError.self, performing: sut.get)
+    }
+    
+    @Test func typeZip_threeSuccesses() throws {
+        let sut = Result.zip(
+            Sut<Int>.success(1),
+            Sut<String>.success("baz"),
+            Sut<Double>.success(1.1)
+        )
+        
+        let unwrapped = try sut.get()
+        
+        #expect(unwrapped.0 == 1)
+        #expect(unwrapped.1 == "baz")
+        #expect(unwrapped.2 == 1.1)
+    }
+    
+    @Test func typeZip_threeWithFailure() throws {
+        let sut = Result.zip(
+            Sut<Int>.success(1),
+            Sut<String>.success("baz"),
+            Sut<Double>.failure(.firstCase)
+        )
+        
+        #expect(throws: TestError.self, performing: sut.get)
+    }
+    
+    @Test(arguments: [Sut<Int>.success(1), .failure(.firstCase)])
+    func resultToEither(_ result: Sut<Int>) async throws {
+        let either = result.either()
+        
+        switch (result, either) {
+        case let (.success(lhs), .left(rhs)):
+            #expect(lhs == rhs)
+            
+        case let (.failure(lhs), .right(rhs)):
+            #expect(lhs == rhs)
+            
+        default:
+            throw TestError.failedTest
+        }
+    }
 }
 
 final class ResultTests: XCTestCase {
@@ -171,19 +235,6 @@ final class ResultTests: XCTestCase {
         case .success(let success):
             XCTAssertEqual(success.0, 1)
             XCTAssertEqual(success.1, 1)
-            
-        case .failure: XCTFail()
-        }
-    }
-    
-    func test_zip_global() {
-        let lhs = Sut.success(1)
-        let rhs = Sut.success(2)
-        
-        switch zip(lhs, rhs) {
-        case .success(let success):
-            XCTAssertEqual(success.0, 1)
-            XCTAssertEqual(success.1, 2)
             
         case .failure: XCTFail()
         }

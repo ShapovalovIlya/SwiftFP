@@ -28,7 +28,7 @@ public enum Sort {
     }
 
     //MARK: - Comparator
-   public protocol Comparator<Element>: Sendable {
+   public protocol Comparator<Element> {
         associatedtype Element
         
         var sortOrder: Sort.Order { get }

@@ -11,7 +11,7 @@ extension Sort {
     //MARK: - Descriptor
     public struct Descriptor<Element>: Comparator {
         public let sortOrder: Sort.Order
-        @usableFromInline let comparator: @Sendable (Element, Element) -> ComparisonResult
+        @usableFromInline let comparator: (Element, Element) -> ComparisonResult
         
         @inlinable
         public func compare(_ lhs: Element, _ rhs: Element) -> ComparisonResult {
@@ -21,7 +21,7 @@ extension Sort {
         @inlinable
         public init(
             _ order: Sort.Order = .ascending,
-            comparator: @escaping @Sendable (Element, Element) -> ComparisonResult
+            comparator: @escaping (Element, Element) -> ComparisonResult
         ) {
             self.sortOrder = order
             self.comparator = comparator
@@ -30,7 +30,7 @@ extension Sort {
         @inlinable
         public init<C: Comparable>(
             _ order: Sort.Order = .ascending,
-            lens: @escaping @Sendable (Element) -> C
+            lens: @escaping (Element) -> C
         ) {
             self.init(order) { lRoot, rRoor in
                 let lhs = lens(lRoot)
@@ -50,7 +50,7 @@ public extension Sort.Descriptor {
     
     @inlinable
     static func keyPath<T: Comparable>(
-        _ keyPath: KeyPath<Element, T> & Sendable,
+        _ keyPath: KeyPath<Element, T>,
         order: Sort.Order = .ascending
     ) -> Self {
         Sort.Descriptor(order) { lRoot, rRoor in

@@ -91,20 +91,37 @@ public extension Result {
     }
     
     @inlinable
-    func reduce(_ process: (inout Success) -> Void) -> Self {
-        map {
-            var mutating = $0
-            process(&mutating)
-            return mutating
-        }
-    }
-    
-    @inlinable
     func either() -> Either<Success, Failure> {
         switch self {
         case .success(let success): return .left(success)
         case .failure(let failure): return .right(failure)
         }
+    }
+    
+    /// Creates a `Result` of pairs built out of two underlying `Results`.
+    /// - Parameters:
+    ///   - lhs: The first `Result` to zip.
+    ///   - rhs: The second `Result` to zip.
+    /// - Returns: A `Result` of tuple pair, where the elements of pair are
+    ///   corresponding `success` of `lhs` and `rhs`, or `failure` if any of instances is `failure`.
+    @inlinable
+    static func zip<Other>(
+        _ lhs: Result<Success, Failure>,
+        _ rhs: Result<Other, Failure>
+    ) -> Result<(Success, Other), Failure> { lhs.zip(rhs) }
+    
+    /// Creates a ``Swift/Result`` by merging given ``Swift/Result`` - arguments.
+    /// - Returns: A ``Swift/Result`` of  success values in tuple or `failure` if any of arguments contains `failure`
+    @inlinable
+    static func zip<A, B>(
+        _ wrapped: Result<Success, Failure>,
+        _ a: Result<A, Failure>,
+        _ b: Result<B, Failure>
+    ) -> Result<(Success, A, B), Failure> {
+        Result
+            .zip(wrapped, a)
+            .zip(b)
+            .map { ($0.0, $0.1, $1) }
     }
 }
 
@@ -164,15 +181,3 @@ extension Result: Sendable where Success: Sendable, Failure: Sendable {
             .flatMap(\.self)
     }
 }
-
-/// Creates a `Result` of pairs built out of two underlying `Results`.
-/// - Parameters:
-///   - lhs: The first `Result` to zip.
-///   - rhs: The second `Result` to zip.
-/// - Returns: A `Result` of tuple pair, where the elements of pair are
-///   corresponding `success` of `lhs` and `rhs`, or `failure` if any of instances is `failure`.
-@inlinable
-public func zip<Success1, Success2>(
-    _ lhs: Result<Success1, Error>,
-    _ rhs: Result<Success2, Error>
-) -> Result<(Success1, Success2), Error> { lhs.zip(rhs) }
