@@ -110,18 +110,50 @@ public extension Result {
         _ rhs: Result<Other, Failure>
     ) -> Result<(Success, Other), Failure> { lhs.zip(rhs) }
     
-    /// Creates a ``Swift/Result`` by merging given ``Swift/Result`` - arguments.
-    /// - Returns: A ``Swift/Result`` of  success values in tuple or `failure` if any of arguments contains `failure`
+    /// Combines multiple ``Swift/Result`` values into a single ``Swift/Result`` containing a tuple of their unwrapped values.
+    /// If **any** input is a `.failure`, the first encountered error is returned.
+    ///
+    /// - Parameters:
+    ///   - first: The first `Result` to unwrap.
+    ///   - other: A variadic list of additional `Result` values.
+    /// - Returns:
+    ///   - `.success` if **all** inputs are `.success`.
+    ///   - `.failure` if **any** input is `.failure` (returns the first error encountered).
+    ///
+    /// #### Example:
+    /// ```swift
+    /// let a: Result<Int, Error> = .success(1)
+    /// let b: Result<String, Error> = .success("Hello")
+    /// let c: Result<Double, Error> = .success(3.14)
+    ///
+    /// let zipped = Result.zip(a, b, c) // Result<(Int, String, Double), Error>
+    ///
+    /// switch zipped {
+    /// case .success(let (x, y, z)):
+    ///     print(x, y, z) // "1 Hello 3.14"
+    /// case .failure(let error):
+    ///     print("Failed with error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// #### Notes:
+    /// 1. **Short-Circuiting**: Fails immediately on the first `.failure` (similar to `Result.flatMap`).
+    /// 2. **Variadic Generics**: Requires Swift 5.9+ (or later with `enable-experimental-feature VariadicGenerics`).
+    ///
+    /// #### See Also:
+    /// - [Swift Evolution: Parameter Packs (SE-0393)](https://github.com/apple/swift-evolution/blob/main/proposals/0393-parameter-packs.md).
     @inlinable
-    static func zip<A, B>(
-        _ wrapped: Result<Success, Failure>,
-        _ a: Result<A, Failure>,
-        _ b: Result<B, Failure>
-    ) -> Result<(Success, A, B), Failure> {
-        Result
-            .zip(wrapped, a)
-            .zip(b)
-            .map { ($0.0, $0.1, $1) }
+    static func zip<each U>(
+        _ first: Result<Success, Failure>,
+        _ other: repeat Result<each U, Failure>
+    ) -> Result<(Success, repeat each U), Failure> {
+        do {
+            let unwrapped = try (first.get(), repeat (each other).get())
+            return .success(unwrapped)
+            
+        } catch {
+            return .failure(error)
+        }
     }
 }
 

@@ -109,8 +109,8 @@ public extension Sequence where Element: Sendable {
     func concurrentMap<T: Sendable>(
         _ transform: @escaping @Sendable (Element) async throws -> T
     ) async rethrows -> [T] {
-        try await withThrowingTaskGroup(of: T.self, returning: [T].self) { group in
-            self.forEach { element in
+        try await withThrowingTaskGroup(of: T.self, returning: [T].self) { [copy = self] group in
+            copy.forEach { element in
                 group.addTask {
                     try await transform(element)
                 }

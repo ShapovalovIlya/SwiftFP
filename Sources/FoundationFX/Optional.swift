@@ -63,24 +63,51 @@ public extension Optional {
         }
     }
     
-    /// Zip two optional values.
+    /// Attempts to unwrap and combine the `first` optional value with one or more `other` optional values into a tuple.
+    /// If **any** of the inputs are `nil`, the method returns `nil`.
+    ///
+    /// ### Example:
+    ///```swift
+    ///let a: Int? = 1
+    ///let b: String? = "Hello"
+    ///let c: Double? = 3.14
+    ///if let zipped = Optional.zip(a, b, c) {
+    ///    print(zipped) // (1, "Hello", 3.14)
+    ///} else {
+    ///    print("One or more values were nil")
+    ///}
+    ///```
+    ///
+    /// ### See Also:
+    /// Swift Evolution [SE-0393: Parameter Packs](https://github.com/apple/swift-evolution/blob/main/proposals/0393-parameter-packs.md).
+    ///
     /// - Parameters:
-    ///   - lhs: first optional value to combine
-    ///   - rhs: second optional value to combine
-    /// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
+    ///   - first: The first optional value to unwrap.
+    ///   - other: A variadic list of additional optional values.
+    /// - Returns:
+    ///   - A tuple containing all unwrapped values if **all** inputs are non-`nil`. Or `nil` if **any** input is `nil`.
     @inlinable
-    static func zip<Other>(_ lhs: Wrapped?, _ rhs: Other?) -> (Wrapped, Other)? { lhs.zip(rhs) }
+    static func zip<each U>(
+        _ first: Wrapped?,
+        _ other: repeat (each U)?
+    ) -> (Wrapped, repeat each U)? {
+        do {
+            return try (first.unwrap(), repeat (each other).unwrap())
+        } catch {
+            return nil
+        }
+    }
+}
+
+extension Optional {
+    struct Termination: Error {}
     
-    @inlinable
-    static func zip<A, B>(
-        _ w: Wrapped?,
-        _ a: A?,
-        _ b: B?
-    ) -> (Wrapped, A, B)? {
-        Optional
-            .zip(w, a)
-            .zip(b)
-            .map { ($0.0, $0.1, $1) }
+    @usableFromInline
+    func unwrap() throws -> Wrapped {
+        guard let self else {
+            throw Termination()
+        }
+        return self
     }
 }
 

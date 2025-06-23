@@ -108,7 +108,7 @@ struct OptionalTestNew {
     }
     
     @Test
-    func optionalZip3Values_someValues() async throws {
+    func typeZip_someValues() async throws {
         let sut = Optional.zip(1, "baz", 1.1)
         
         let unwrapped = try #require(sut)
@@ -119,7 +119,7 @@ struct OptionalTestNew {
     }
     
     @Test
-    func optionalZip3Values_someValuesWithNil() async throws {
+    func typeZip_someValuesWithNil() async throws {
         let sut = Optional.zip(1, "baz", Optional<Int>.none)
         
         #expect(sut == nil)

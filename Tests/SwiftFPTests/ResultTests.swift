@@ -39,6 +39,14 @@ struct ResultTestsNew {
         #expect(throws: TestError.self, performing: sut.get)
     }
     
+    @Test func typeZip_singleValue() async throws {
+        let sut = Result.zip(Sut<Int>.success(1))
+        
+        let unwrapped = try sut.get()
+        
+        #expect(unwrapped == 1)
+    }
+    
     @Test func typeZip_threeSuccesses() throws {
         let sut = Result.zip(
             Sut<Int>.success(1),
