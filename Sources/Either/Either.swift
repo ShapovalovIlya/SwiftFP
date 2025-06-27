@@ -7,10 +7,31 @@
 
 import Foundation
 
-/// `Either` is a data structure that represent branching.
+/// A type that represents a value of one of two possible types (a disjoint union).
 ///
-/// The `Either` monad is a object that represents computations that can result in one of two values:
-/// a success (often called `Left`) or a failure (often called `Right`).
+/// The ‎`Either` enum is a sum type that can hold a value of either the ‎`Left` or ‎`Right` type, but not both at the same time.
+/// This is useful for representing values that can be one of two distinct types, such as the result of a computation that may succeed with one type or fail with another.
+///
+/// ## Example:
+///```swift
+/// let success: Either<Int, String> = .left(42)
+/// let failure: Either<Int, String> = .right("Error message")
+///
+/// switch success {
+/// case .left(let value):
+///     print("Success with value: \(value)")
+/// case .right(let error):
+///     print("Failure with error: \(error)")
+/// }
+/// ```
+///
+/// ‎`Either` provides a variety of functional-style methods for transforming and combining values,
+/// such as ‎`map`, ‎`flatMap`, ‎`mapRight`, and ‎`flatMapRight`,
+/// as well as subscripts for accessing properties of the contained value via key paths.
+/// It also supports asynchronous transformations and applicative operations.
+///
+/// - Note: Only one of the cases (‎`.left` or ‎`.right`) can be present at any time.
+///
 @frozen
 public enum Either<Left, Right> {
     case left(Left)
@@ -180,7 +201,7 @@ public enum Either<Left, Right> {
 extension Either where Left == Right {
     
     /// Return wrapped value if both branches contains same types.
-    public var unwrap: Left {
+    public var fold: Left {
         switch self {
         case .left(let left): return left
         case .right(let right): return right

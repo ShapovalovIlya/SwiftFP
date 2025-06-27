@@ -21,16 +21,6 @@ struct OptionalTestNew {
         : #expect(sut == nil)
     }
     
-    @Test(arguments: [1, nil])
-    func reduce(state: Int?) async throws {
-        let result = state.reduce { $0 += 1 }
-        
-        switch state {
-        case .some(let wrapped): #expect(result == wrapped + 1)
-        case .none: #expect(result == nil)
-        }
-    }
-    
     //MARK: - replaceNill
     @Test(arguments: [1, nil])
     func replaceNil(state: Int?) async throws {

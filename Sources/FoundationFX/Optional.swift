@@ -8,10 +8,31 @@
 import Foundation
 
 public extension Optional {
-    /// Evaluates given  function when both `Optional` instances of function and value are not `nil`,
-    /// passing the unwrapped value as a parameter.
-    /// - Parameter functor: A `Optional` function that takes the unwrapped value of the instance.
-    /// - Returns: The result of the given function. If some of this instances is nil, returns nil.
+    
+    /// Applies a given optional transformation function to the wrapped value, if both the optional and the function are non-nil.
+    ///
+    /// This method allows you to apply an optional transformation (a function that may or may not exist) to an optional value.
+    /// If either the optional value (‎`self`) or the provided function (‎`functor`) is ‎`nil`, the result is ‎`nil`.
+    /// If both are non-nil, the function is applied to the value, and the result is returned as an optional.
+    /// If the function throws, the error is propagated.
+    ///
+    /// - Parameter functor: An optional function that takes the wrapped value as input and returns a new value, possibly throwing an error.
+    /// - Returns: An optional containing the result of applying the function to the wrapped value, or ‎`nil` if either the value or the function is ‎`nil`.
+    ///
+    /// ### Example:
+    /// ```swift
+    /// let value: Int? = 5
+    /// let transform: ((Int) -> String)? = { "\($0)" }
+    ///
+    /// let result = value.apply(transform) // result is Optional("5")
+    ///
+    /// let nilValue: Int? = nil
+    /// let result2 = nilValue.apply(transform) // result2 is nil
+    ///
+    /// let nilTransform: ((Int) -> String)? = nil
+    /// let result3 = value.apply(nilTransform) // result3 is nil
+    /// ```
+    ///
     @inlinable
     @discardableResult
     func apply<NewWrapped>(
@@ -22,9 +43,24 @@ public extension Optional {
         }
     }
        
-    /// Zip two optional values.
-    /// - Parameter other: optional value to combine with
-    /// - Returns: `Optional tuple` containing two upstream values in tuple or `nil` if any of them is `nil`
+    /// Combines two optional values into a single optional tuple if both values are non-nil.
+    ///
+    /// This method “zips” the current optional (‎`self`) with another optional value (‎`other`). If both optionals contain values,
+    /// it returns an optional containing a tuple of both values. If either optional is ‎`nil`, the result is ‎`nil`.
+    ///
+    /// - Parameter other: Another optional value to zip with.
+    /// - Returns: An optional tuple containing the wrapped values of ‎`self` and ‎`other` if both are non-nil; otherwise, ‎`nil`.
+    ///
+    /// ### Example:
+    /// ```swift
+    /// let a: Int? = 1
+    /// let b: String? = "hello"
+    /// let zipped = a.zip(b) // zipped is Optional((1, "hello"))
+    ///
+    /// let c: Int? = nil
+    /// let zipped2 = c.zip(b) // zipped2 is nil
+    /// ```
+    ///
     @inlinable
     func zip<U>(_ other: U?) -> Optional<(Wrapped, U)> {
         flatMap { wrapped in
@@ -35,23 +71,32 @@ public extension Optional {
     /// Filter wrapped value with given condition.
     /// - Parameter condition: A closure that takes the unwrapped value of the instance
     /// - Returns: New instance if wrapped value match given condition. Otherwise return `nil`.
+    
+    /// Returns the wrapped value if it satisfies the given predicate; otherwise, returns ‎`nil`.
+    ///
+    /// This method allows you to conditionally keep the value inside an optional based on a predicate.
+    /// If the optional is non-nil and the predicate returns ‎`true`, the value is returned. If the optional is ‎`nil`
+    /// or the predicate returns ‎`false`, the result is ‎`nil`. If the predicate throws an error, the error is propagated.
+    ///
+    /// - Parameter condition: A closure that takes the wrapped value as its argument and returns a Boolean value indicating whether the value should be kept.
+    /// - Returns: The wrapped value if it exists and satisfies the predicate; otherwise, ‎`nil`.
+    ///
+    /// ### Example:
+    ///```swift
+    /// let value: Int? = 10
+    /// let filtered = value.filter { $0 > 5 } // filtered is Optional(10)
+    ///
+     /// let filtered2 = value.filter { $0 > 20 } // filtered2 is nil
+    ///
+    /// let nilValue: Int? = nil
+    /// let filtered3 = nilValue.filter { $0 > 5 } // filtered3 is nil
+    ///```
+    ///
     @inlinable
     func filter(
         _ condition: (Wrapped) throws -> Bool
     ) rethrows -> Wrapped? {
         try flatMap { try condition($0) ? $0 : nil }
-    }
-    
-    /// Evaluates given closure, passing current value as parameter.
-    /// - Parameter body: A closure that takes current wrapped value
-    /// - Returns: result of execution as new type.
-    @inlinable
-    func reduce(_ process: (inout Wrapped) throws -> Void) rethrows -> Self {
-        try map {
-            var mutating = $0
-            try process(&mutating)
-            return mutating 
-        }
     }
     
     /// Replace `nil` with given value.

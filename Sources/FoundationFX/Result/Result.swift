@@ -63,10 +63,21 @@ public extension Result {
     
     //MARK: - apply(_:)
     
-    /// Returns a new result, apply `Result` functor to  success value.
-    /// - Parameter functor: A `Result` functor that takes success value of this instance.
-    /// - Returns: A `Result` instance with the result of evaluating stored function as the new success value.
-    /// If any of given `Result` instances are failure, then produced `Result` will be failure.
+    /// Applies a function wrapped in a ‎`Result` to the value of this ‎`Result`, if both are successful.
+    ///
+    /// This method enables applicative-style composition for ‎`Result` types, allowing you to apply a function (wrapped in a ‎`Result`) to the success value of another ‎`Result`.
+    ///
+    /// - Parameter functor: A ‎`Result` containing a function from ‎`Success` to ‎`NewSuccess`. If this is a ‎`.failure`, the failure is propagated.
+    /// - Returns: A ‎`Result` containing the result of applying the function to the success value, or the first encountered failure.
+    /// - Note: If either ‎`self` or ‎`functor` is a ‎`.failure`, the first failure encountered is returned.
+    ///
+    /// ### Example:
+    /// ```swift
+    /// let value: Result<Int, Error> = .success(2)
+    /// let function: Result<(Int) -> String, Error> = .success { "\($0 * 2)" }
+    /// let result = value.apply(function) // .success("4")
+    /// ```
+     ///
     @inlinable
     @discardableResult
     func apply<NewSuccess>(
@@ -79,10 +90,24 @@ public extension Result {
     
     //MARK: - zip(_:)
     
-    /// Zip two `Result` values
-    /// - Parameter other: `Result` object to zip with
-    /// - Returns: `Result` containing two upstream values in `tuple` or `failure`,
-    /// if any of upstream results is `failure`.
+    /// Combines two ‎`Result` values into a single ‎`Result` containing a tuple of both success values, or returns the first encountered failure.
+    ///
+    /// The ‎`zip(_:)` method allows you to combine the success values of two ‎`Result` instances if both are ‎`.success`. If either ‎`self` or ‎`other` is a ‎`.failure`, the first failure encountered is returned.
+    ///
+    /// - Parameter other: Another ‎`Result` instance with the same ‎`Failure` type.
+    /// - Returns: A ‎`Result` containing a tuple of both success values if both are ‎`.success`, or the first encountered failure
+    ///
+    /// ### Example:
+    /// ```swift
+    /// let a: Result<Int, Error> = .success(1)
+    /// let b: Result<String, Error> = .success("hello")
+    /// let zipped = a.zip(b) // .success((1, "hello"))
+    ///
+    /// let c: Result<Int, Error> = .failure(MyError())
+    /// let d: Result<String, Error> = .success("world")
+    /// let zipped2 = c.zip(d) // .failure(MyError())
+    /// ```
+    ///
     @inlinable
     func zip<Other>(_ other: Result<Other, Failure>) -> Result<(Success, Other), Failure> {
         flatMap { success in
@@ -157,13 +182,41 @@ public extension Result {
     }
 }
 
-public extension Result where Success == Data {
+public extension Result where Success == Data, Failure == Error {
+    
+    /// Decodes the contained Data value into a Decodable type using the provided JSONDecoder.
+    ///
+    /// This method operates on a Result<Data, Error> instance, attempting to decode the Data into the specified type.
+    /// If the Result is a success, it tries to decode the data using the given decoder. If decoding succeeds, it returns
+    /// a ‎`.success` containing the decoded value. If decoding fails, it returns a ‎`.failure` with the decoding error.
+    /// If the original Result is a failure, the error is propagated.
+    /// - Parameters:
+    ///   - type: The type to decode from the Data. Must conform to ‎`Decodable`.
+    ///   - decoder: The ‎`JSONDecoder` instance to use for decoding.
+    /// - Returns: A ‎`Result` containing either the decoded value of type ‎`T` on success, or an ‎`Error` on failure.
+    ///
+    /// ### Example:
+    ///```swift
+    /// let result: Result<Data, Error> = .success(userJsonData)
+    /// let userResult = result.decodeJSON(User.self, decoder: JSONDecoder())
+    /// switch userResult {
+    /// case .success(let user):
+    ///     print("User decoded: \(user)")
+    /// case .failure(let error):
+    ///     print("Decoding failed with error: \(error)")
+    /// }
+    /// ```
+    ///
     @inlinable
     func decodeJSON<T: Decodable>(
         _ type: T.Type,
         decoder: JSONDecoder
     ) -> Result<T, Error> {
-        tryMap { try decoder.decode(type.self, from: $0) }
+        flatMap { data in
+            Result<T, Error> {
+                try decoder.decode(type.self, from: data)
+            }
+        }
     }
 }
 
