@@ -18,7 +18,6 @@ import Foundation
 ///   - Result: The type of the value produced by the computation.
 ///
 /// ‎`Reader` supports functional transformations such as ‎`map`, ‎`flatMap`, and ‎`pullback`, as well as composition and zipping of multiple readers.
-/// It also supports dynamic member lookup for ergonomic property mutation and access.
 ///
 /// ### Example:
 ///```swift
@@ -39,7 +38,6 @@ import Foundation
 /// - Note: The environment is read-only and must be provided at the time of evaluation.
 ///
 @frozen
-@dynamicMemberLookup
 public struct Reader<Environment, Result>: Sendable {
     public typealias Work = @Sendable (Environment) -> Result
     
@@ -69,14 +67,6 @@ public struct Reader<Environment, Result>: Sendable {
         self.run = run
     }
     
-    //MARK: - Subscript
-    @inlinable
-    public subscript<T: Sendable>(
-        dynamicMember keyPath: WritableKeyPath<Result, T> & Sendable
-    ) -> (T) -> Self {
-        { newValue in self.reduce { $0[keyPath: keyPath] = newValue } }
-    }
-    
     //MARK: - Public methods
     
     /// Returns the “purest” instance possible for the type
@@ -89,7 +79,7 @@ public struct Reader<Environment, Result>: Sendable {
     /// - Parameter result: The value to be returned by the ‎``Reader``.
     /// - Returns: A ‎``Reader`` instance that always returns ‎`result` for any environment.
     ///
-    /// ### Example
+    /// ### Example:
     ///```swift
     /// // Create a Reader that always returns the string "Hello"
     /// let helloReader = Reader<Int, String>.pure("Hello")
@@ -112,7 +102,7 @@ public struct Reader<Environment, Result>: Sendable {
     /// - Parameter environment: The environment value to use for the computation.
     /// - Returns: The result produced by applying the environment to the ‎``Reader``.
     ///
-    /// ### Example
+    /// ### Example:
     ///```swift
     /// // Define a Reader that returns the environment value doubled
     /// let doubleReader = Reader<Int, Int> { env in env * 2 }
@@ -260,6 +250,30 @@ public struct Reader<Environment, Result>: Sendable {
             .joined()
     }
     
+    /// Combines the results of two ‎``Reader`` instances into a single ‎``Reader`` that returns a tuple of both results.
+    ///
+    /// The ‎`zip` method allows you to run two ‎``Reader`` computations with the same environment and collect their results together.
+    /// The resulting ‎``Reader`` produces a tuple containing the result of the current ‎``Reader`` and the result of the ‎`other` ‎``Reader``.
+    ///
+    /// - Parameter other: Another ‎``Reader`` that operates on the same environment and produces a result of type ‎`Other`.
+    /// - Returns: A new ‎``Reader`` that, when evaluated, returns a tuple of both results.
+    ///
+    /// ### Example:
+    ///```swift
+    /// // A Reader that returns the environment as a string
+    /// let stringReader = Reader<Int, String> { env in "\(env)" }
+    ///
+    /// // A Reader that returns whether the environment is even
+    /// let evenReader = Reader<Int, Bool> { env in env % 2 == 0 }
+    ///
+    /// // Combine both Readers
+    /// let zippedReader = stringReader.zip(evenReader)
+    ///
+    /// // Evaluate the zipped Reader
+    /// let result = zippedReader.apply(4) // result is ("4", true)
+    /// let result2 = zippedReader.apply(5) // result is ("5", false)
+    ///```
+    ///
     @inlinable
     public func zip<Other>(
         _ other: Reader<Environment, Other>
@@ -269,6 +283,71 @@ public struct Reader<Environment, Result>: Sendable {
         }
     }
     
+    /// Combines the results of multiple ‎``Reader`` instances into a single‎ that returns a tuple of all results.
+    ///
+    /// This static ‎`zip` method allows you to run several ‎``Reader`` computations with the same environment and collect their results together.
+    /// The resulting ‎``Reader`` produces a tuple containing the result of the ‎`first` ‎`Reader` and the results of each additional ‎`Reader` in ‎`other`.
+    /// This is especially useful for aggregating the outputs of multiple environment-dependent computations into a single value.
+    ///
+    /// - Parameters:
+    ///   - first: The first ‎`Reader` to evaluate.
+    ///   - other: A variadic list of additional ‎`Reader` instances to evaluate with the same environment.
+    /// - Returns: A new ‎`Reader` that, when evaluated, returns a tuple of all results.
+    ///
+    /// ### Example:
+    ///```swift
+    /// // Define several Readers
+    /// let intReader = Reader<Int, Int> { $0 }
+    /// let stringReader = Reader<Int, String> { "\($0)" }
+    /// let evenReader = Reader<Int, Bool> { $0 % 2 == 0 }
+    ///
+    /// // Zip them together
+    /// let zipped = Reader.zip(intReader, stringReader, evenReader)
+    ///
+    /// // Evaluate the zipped Reader
+    /// let result = zipped.apply(4) // result is (4, "4", true)
+    /// let result2 = zipped.apply(5) // result is (5, "5", false)
+    ///```
+    ///
+    @inlinable
+    public static func zip<each U>(
+        _ first: Reader<Environment, Result>,
+        _ other: repeat Reader<Environment, each U>
+    ) -> Reader<Environment, (Result, repeat each U)> {
+        Reader<Environment, (Result, repeat each U)> { env in
+            (first.apply(env), repeat (each other).apply(env))
+        }
+    }
+    
+    /// Combines the results of two ‎``Reader`` instances using a custom combining closure.
+    ///
+    /// The ‎`zip(_:into:)` method allows you to run two ‎``Reader`` computations with the same environment and then merge their results
+    /// into a single value using the provided ‎`combine` closure. This is useful for composing multiple environment-dependent computations
+    /// and producing a single, custom result.
+    ///
+    /// - Parameters:
+    ///   - other: Another ‎``Reader`` that operates on the same environment and produces a result of type ‎`Other`.
+    ///   - combine: A closure that takes the results of both readers and combines them into a new value.
+    /// - Returns: A new ‎``Reader`` that, when evaluated, returns the combined result.
+    ///
+    /// ### Example:
+    ///```swift
+    /// // A Reader that returns the environment as a string
+    /// let stringReader = Reader<Int, String> { env in "\(env)" }
+    ///
+    /// // A Reader that returns whether the environment is even
+    /// let evenReader = Reader<Int, Bool> { env in env % 2 == 0 }
+    ///
+    /// // Combine both Readers into a custom string
+    /// let combinedReader = stringReader.zip(evenReader) { str, isEven in
+    ///     "\(str) is even: \(isEven)"
+    /// }
+    ///
+    /// // Evaluate the combined Reader
+    /// let result = combinedReader.apply(4) // result is "4 is even: true"
+    /// let result2 = combinedReader.apply(5) // result is "5 is even: false"
+    ///```
+    ///
     @inlinable
     public func zip<Other, NewResult>(
         _ other: Reader<Environment, Other>,
@@ -278,17 +357,30 @@ public struct Reader<Environment, Result>: Sendable {
             .map(combine)
     }
     
-    @inlinable
-    public func reduce(
-        _ process: @escaping @Sendable (inout Result) -> Void
-    ) -> Self {
-        map {
-            var mutating = $0
-            process(&mutating)
-            return mutating
-        }
-    }
-    
+    /// Composes two ‎``Reader`` instances by feeding the result of the first as the environment for the second.
+    ///
+    /// The ‎`curry` method allows you to chain two ‎``Reader`` computations, where the result of the current ‎``Reader``
+    /// is used as the environment for the next ‎``Reader``. This enables the construction of pipelines where the output
+    /// of one computation becomes the input for the next, all within the ‎`Reader` context.
+    ///
+    /// - Parameter next: A ‎`Reader` that takes the result of the current ‎`Reader` as its environment and produces a new result.
+    /// - Returns: A new ‎`Reader` that, when evaluated, applies the current ‎`Reader` to the environment, then applies ‎`next` to the result.
+    ///
+    /// ### Example:
+    ///```swift
+    /// // A Reader that returns the environment doubled
+    /// let doubleReader = Reader<Int, Int> { $0 * 2 }
+    ///
+    /// // A Reader that takes an Int and returns its string description
+    /// let stringReader = Reader<Int, String> { "\($0)" }
+    ///
+    /// // Curry the two Readers
+    /// let curried = doubleReader.curry(stringReader)
+    ///
+    /// // Evaluate the curried Reader
+    /// let result = curried.apply(5) // result is "10"
+    ///```
+    ///
     @inlinable
     public func curry<T>(_ next: Reader<Result, T>) -> Reader<Environment, T> {
         map(next.apply)

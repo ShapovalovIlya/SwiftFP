@@ -7,7 +7,7 @@
 
 import Foundation
 import Testing
-import SwiftFP
+@testable import SwiftFP
 
 extension Int {
     var isEven: Bool { self % 2 == 0 }
@@ -115,12 +115,6 @@ struct ReaderTests {
         #expect(throws: NSError.self, performing: sut.apply(1).get)
     }
     
-    @Test func reduce() async throws {
-        let sut = Sut(\.description).reduce { $0 += " baz" }
-
-        #expect(sut(1) == "1 baz")
-    }
-    
     @Test func pullback() async throws {
         @Sendable func doubleToInt(_ double: Double) -> Int { Int(double) }
         
@@ -153,5 +147,15 @@ struct ReaderTests {
         let addTwo = addOne + addOne
         
         #expect(addTwo(1) == 3)
+    }
+    
+    @Test func zipPackOfReaders() async throws {
+        let sut = Reader.zip(
+            Reader<Int, String>(\.description),
+            Reader<Int, Bool>(\.isEven),
+            Reader<Int, UInt>(UInt.init(bitPattern:))
+        )
+        
+        #expect(sut.apply(42) == ("42", true, 42))
     }
 }
