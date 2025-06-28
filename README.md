@@ -47,3 +47,21 @@ print(summary)
 ‎`Either` is a flexible enum type for representing a value that can be one of two possible types—commonly used for error handling, 
 branching logic, or modeling data with multiple valid forms. 
 
+## Zipper:
+
+‎`Zipper` is a Swift data structure for navigating and editing collections with a movable cursor. 
+It lets you efficiently focus on, update, and traverse elements while retaining access to the context before and after the current position.
+Perfect for editors, undo/redo stacks, and more.
+
+```swift
+// Create a zipper focused on "b"
+let zipper = Zipper(previous: ["a"], current: "b", next: ["c", "d"])
+print(zipper.current)         // "b"
+print(Array(zipper.previous)) // ["a"]
+print(Array(zipper.next))     // ["c", "d"]
+
+// Move the cursor forward
+var mutable = zipper
+mutable.forward()
+print(mutable.current)        // "c"
+```
