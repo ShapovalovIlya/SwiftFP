@@ -91,7 +91,7 @@ public struct Reader<Environment, Result> {
     /// ```
     ///
     @inlinable
-    public static func pure(_ result: Result) -> Self where Result: Sendable {
+    public static func pure(_ result: Result) -> Self {
         Reader { _ in result }
     }
     
@@ -351,7 +351,7 @@ public struct Reader<Environment, Result> {
     @inlinable
     public func zip<Other, NewResult>(
         _ other: Reader<Environment, Other>,
-        into combine: @escaping @Sendable (Result, Other) -> NewResult
+        into combine: @escaping (Result, Other) -> NewResult
     ) -> Reader<Environment, NewResult> where Result: Sendable {
         self.zip(other)
             .map(combine)
