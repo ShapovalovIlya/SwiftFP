@@ -38,8 +38,9 @@ import Foundation
 /// - Note: The environment is read-only and must be provided at the time of evaluation.
 ///
 @frozen
-public struct Reader<Environment, Result>: Sendable {
-    public typealias Work = @Sendable (Environment) -> Result
+nonisolated
+public struct Reader<Environment, Result> {
+    public typealias Work = (Environment) -> Result
     
     @usableFromInline let run: Work
     
@@ -111,7 +112,6 @@ public struct Reader<Environment, Result>: Sendable {
     /// let result = doubleReader.apply(10) // result is 20
     ///```
     ///
-    @Sendable
     @inlinable
     public func apply(_ environment: Environment) -> Result {
         run(environment)
@@ -174,7 +174,7 @@ public struct Reader<Environment, Result>: Sendable {
     ///
     @inlinable
     public func map<NewResult>(
-        _ transform: @escaping @Sendable (Result) -> NewResult
+        _ transform: @escaping (Result) -> NewResult
     ) -> Reader<Environment, NewResult> {
         Reader<Environment, NewResult> { transform(apply($0)) }
     }
@@ -205,7 +205,7 @@ public struct Reader<Environment, Result>: Sendable {
     ///
     @inlinable
     public func pullback<Source>(
-        _ transform: @escaping @Sendable (Source) -> Environment
+        _ transform: @escaping (Source) -> Environment
     ) -> Reader<Source, Result> {
         Reader<Source, Environment>(transform)
             .map(self.apply)
@@ -213,7 +213,7 @@ public struct Reader<Environment, Result>: Sendable {
     
     @inlinable
     public func tryMap<NewResult>(
-        _ transform: @escaping @Sendable (Result) throws -> NewResult
+        _ transform: @escaping (Result) throws -> NewResult
     ) -> Reader<Environment, Swift.Result<NewResult, Error>> {
         map { r in Swift.Result { try transform(r) } }
     }
@@ -244,7 +244,7 @@ public struct Reader<Environment, Result>: Sendable {
     ///
     @inlinable
     public func flatMap<NewResult>(
-        _ transform: @escaping @Sendable (Result) -> Reader<Environment, NewResult>
+        _ transform: @escaping (Result) -> Reader<Environment, NewResult>
     ) -> Reader<Environment, NewResult> {
         self.map(transform)
             .joined()

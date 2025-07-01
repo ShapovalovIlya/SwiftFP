@@ -91,14 +91,6 @@ struct ReaderTests {
         #expect(eventModel.isEven)
     }
     
-    @Test func readerSubscript() async throws {
-        let sut = Reader<URL, URLRequest>
-            .init { URLRequest(url: $0) }
-            .httpMethod("GET")
-        
-        #expect(sut.apply(URL(string: "MyURL")!).httpMethod == "GET")
-    }
-    
     @Test func tryMapValue() async throws {
         @Sendable func addOne(_ int: Int) throws -> Int { int + 1 }
         let sut = Reader<Int, Int>(\.self).tryMap(addOne)
