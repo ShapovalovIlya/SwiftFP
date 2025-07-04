@@ -13,6 +13,7 @@ import SwiftFP
 struct ResultTestsNew {
     enum TestError: Error, Equatable {
         case firstCase
+        case secondCase
         case failedTest
     }
     
@@ -85,6 +86,26 @@ struct ResultTestsNew {
         default:
             throw TestError.failedTest
         }
+    }
+    
+    @Test func traverseSequence() async throws {
+        let sequence: [Result<Int, TestError>] = Array(repeating: .success(1), count: 3)
+        let sut = Result.sequence(sequence)
+        
+        #expect(try sut.get() == [1, 1, 1])
+    }
+    
+    @Test func traverseSequenceWithError() async throws {
+        let sequence: [Result<Int, TestError>] = [
+            .success(1),
+            .failure(.firstCase),
+            .success(3),
+            .failure(.secondCase)
+        ]
+        let sut = Result.sequence(sequence)
+        
+        let error = #expect(throws: TestError.self, performing: sut.get)
+        #expect(error == .firstCase)
     }
 }
 

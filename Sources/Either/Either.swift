@@ -234,3 +234,4 @@ extension Either where Right: Error {
 
 extension Either: Equatable where Left: Equatable, Right: Equatable {}
 extension Either: Sendable where Left: Sendable, Right: Sendable {}
+extension Either: Hashable where Left: Hashable, Right: Hashable {}

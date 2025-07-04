@@ -180,6 +180,34 @@ public extension Result {
             return .failure(error)
         }
     }
+    
+    /// Converts a sequence of `Result<Success, Failure>` into a single ``Result`` containing an array of all successes,
+    /// or returns the first encountered failure.
+    ///
+    /// This method is commonly known as `sequence` in functional programming. It transforms a sequence of results
+    /// into a result of a sequence, short-circuiting on the first failure.
+    ///
+    /// - Parameter s: A sequence of `Result<Success, Failure>`.
+    /// - Returns: `.success([Success])` if all elements are `.success`, or the first `.failure(Failure)` encountered.
+    /// - Complexity: O(n), where n is the number of elements in the sequence.
+    ///
+    /// ### Example
+    /// ```swift
+    /// let results: [Result<Int, MyError>] = [.success(1), .success(2), .failure(.bad), .success(4)]
+    /// let sequenced = Result.sequence(results)
+    /// // sequenced == .failure(.bad)
+    /// ```
+    ///
+    /// - Note: If the sequence is empty, returns `.success([])`.
+    @inlinable
+    static func sequence<S: Sequence>(
+        _ s: S
+    ) -> Result<[Success], Failure> where S.Element == Result<Success, Failure> {
+        Result<[Success], Error> {
+            try s.map { try $0.get() }
+        }
+        .mapError { $0 as! Failure }
+    }
 }
 
 public extension Result where Success == Data, Failure == Error {
