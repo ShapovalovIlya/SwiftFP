@@ -184,14 +184,11 @@ public extension Result {
     /// Converts a sequence of `Result<Success, Failure>` into a single ``Result`` containing an array of all successes,
     /// or returns the first encountered failure.
     ///
-    /// This method is commonly known as `sequence` in functional programming. It transforms a sequence of results
-    /// into a result of a sequence, short-circuiting on the first failure.
-    ///
     /// - Parameter s: A sequence of `Result<Success, Failure>`.
     /// - Returns: `.success([Success])` if all elements are `.success`, or the first `.failure(Failure)` encountered.
     /// - Complexity: O(n), where n is the number of elements in the sequence.
     ///
-    /// ### Example
+    /// ### Example:
     /// ```swift
     /// let results: [Result<Int, MyError>] = [.success(1), .success(2), .failure(.bad), .success(4)]
     /// let sequenced = Result.sequence(results)

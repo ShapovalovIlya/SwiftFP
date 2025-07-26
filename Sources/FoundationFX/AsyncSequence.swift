@@ -18,14 +18,4 @@ public extension AsyncSequence {
         }
     }
     
-    
-    /// Calls the given closure on each element in the sequence in the same order as a for-in loop.
-    /// - Parameter body: A closure that takes an element of the sequence as a parameter.
-    @inlinable
-    func forEach(_ body: (Self.Element) throws -> Void) async rethrows {
-        for try await element in self {
-            try body(element)
-        }
-    }
-    
 }

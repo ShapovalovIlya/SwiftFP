@@ -8,9 +8,17 @@
 import Foundation
 
 public extension Sequence {
-    /// An asynchronous sequence containing the same elements as this sequence,
-    /// but on which operations, such as `map` and `filter`, are
-    /// implemented asynchronously.
+    /// An asynchronous sequence adapter for this sequence.
+    ///
+    /// Use `asyncAdapter` to wrap any synchronous sequence and expose it as an `AsyncSequence`,
+    /// enabling asynchronous iteration and the use of async sequence operations such as `map`, `filter`,
+    /// and `for await` loops.
+    ///
+    /// The resulting sequence supports cooperative cancellation: if the surrounding `Task` is cancelled,
+    /// iteration will stop and the underlying iterator will be released.
+    ///
+    /// - Returns: An `AsyncAdapterSequence` wrapping this sequence, enabling asynchronous iteration and operations.
+    /// - SeeAlso: ``AsyncAdapterSequence``
     @inlinable var asyncAdapter: AsyncAdapterSequence<Self> {
         AsyncAdapterSequence(self)
     }
