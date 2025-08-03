@@ -245,7 +245,7 @@ public extension Result where Success == Data, Failure == Error {
     }
 }
 
-extension Result: Sendable where Success: Sendable, Failure: Sendable {
+extension Result where Success: Sendable {
     /// Returns a new result, mapping any success value using the given asynchronous transformation.
     /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
@@ -283,7 +283,7 @@ extension Result: Sendable where Success: Sendable, Failure: Sendable {
     @inlinable
     @Sendable
     @discardableResult
-    public func asyncApply<NewSuccess>(
+    public func asyncApply<NewSuccess: Sendable>(
         _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         await functor

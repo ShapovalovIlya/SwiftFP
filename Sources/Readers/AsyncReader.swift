@@ -9,7 +9,7 @@ import Foundation
 
 @frozen
 @dynamicMemberLookup
-public struct AsyncReader<IO, Result>: Sendable {
+public struct AsyncReader<IO, Result>: Sendable where IO: Sendable, Result: Sendable {
     public typealias Task = @Sendable (IO) async -> Result
     
     @usableFromInline let run: Task
