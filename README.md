@@ -49,7 +49,7 @@ branching logic, or modeling data with multiple valid forms.
 
 ## Zipper:
 
-‎`Zipper` is a Swift data structure for navigating and editing collections with a movable cursor. 
+‎`Zipper` is a data structure for navigating and editing collections with a movable cursor. 
 It lets you efficiently focus on, update, and traverse elements while retaining access to the context before and after the current position.
 Perfect for editors, undo/redo stacks, and more.
 
@@ -64,4 +64,26 @@ print(Array(zipper.next))     // ["c", "d"]
 var mutable = zipper
 mutable.forward()
 print(mutable.current)        // "c"
+```
+
+## Effect:
+
+`Effect` is a functional abstraction for deferred computations. Inspired by the IO monad, 
+Effect lets you wrap, compose, and sequence side-effecting or asynchronous operations in a predictable and testable way. 
+Use Effect to organize your effects, improve code clarity, and enable powerful functional patterns in your Swift projects.
+
+```swift
+// Create an effect that returns a value
+let helloEffect = Effect.pure("Hello, Effect!")
+
+// Transform the value using map
+let excitedEffect = helloEffect.map { $0 + " 🎉" }
+
+// Chain effects using flatMap
+let greetEffect = excitedEffect.flatMap { message in
+    Effect { message.uppercased() }
+}
+
+// Run the effect to get the result
+print(greetEffect.run()) // Prints "HELLO, EFFECT! 🎉"
 ```
