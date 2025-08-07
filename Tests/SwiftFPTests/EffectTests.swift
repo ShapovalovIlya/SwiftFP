@@ -54,11 +54,27 @@ struct EffectTest {
         #expect(sut.run() == (1, "baz"))
     }
     
-    @Test func zipInto() async throws {
-        let lhs = Effect.pure(1)
-        let rhs = Effect.pure(2)
-        let sut = lhs.zip(rhs, into: +)
+    @Test
+    func variadicZip() {
+        let intEffect = Effect.pure(42)
         
-        #expect(sut.run() == 3)
+        let zipped = Effect.zip(intEffect)
+        
+        let result = zipped.run()
+        #expect(result == 42)
+    }
+    
+    @Test
+    func variadicZipWithMultipleArguments() {
+        let intEffect = Effect.pure(42)
+        let stringEffect = Effect.pure("hello")
+        let doubleEffect = Effect.pure(3.14)
+        
+        let zipped = Effect.zip(intEffect, stringEffect, doubleEffect)
+        
+        let result = zipped.run()
+        #expect(result.0 == 42)
+        #expect(result.1 == "hello")
+        #expect(result.2 == 3.14)
     }
 }

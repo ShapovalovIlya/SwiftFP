@@ -74,6 +74,15 @@ struct OptionalTestNew {
     }
     
     @Test
+    func variadicZip() async throws {
+        let intOptional = Optional(1)
+        
+        let zipped = Optional.zip(intOptional)
+        
+        #expect(zipped == 1)
+    }
+    
+    @Test
     func optionalZip_someValueWithSomeValue() throws {
         let sut = Optional.zip(1, "a")
         

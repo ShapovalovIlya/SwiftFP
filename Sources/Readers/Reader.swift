@@ -38,7 +38,6 @@ import Foundation
 /// - Note: The environment is read-only and must be provided at the time of evaluation.
 ///
 @frozen
-nonisolated
 public struct Reader<Environment, Result> {
     public typealias Work = (Environment) -> Result
     
