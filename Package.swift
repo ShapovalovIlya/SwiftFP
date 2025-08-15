@@ -110,7 +110,6 @@ fileprivate enum Submodule: String {
     var swiftSettings: [SwiftSetting] {
         [
             .enableExperimentalFeature("StrictConcurrency"),
-            .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
             .enableUpcomingFeature("InferIsolatedConformances")
         ]
     }
