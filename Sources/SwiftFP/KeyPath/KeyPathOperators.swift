@@ -42,3 +42,8 @@ public func ==<T, U: Equatable>(lhs: KeyPath<T, U>, rhs: U) -> (T) -> Bool {
 public func !=<T, U: Equatable>(lhs: KeyPath<T, U>, rhs: U) -> (T) -> Bool {
     { $0[keyPath: lhs] != rhs }
 }
+
+@inlinable
+public func ><T, U: Comparable>(lhs: KeyPath<T, U>, rhs: U) -> (T) -> Bool {
+    { $0[keyPath: lhs] > rhs }
+}
