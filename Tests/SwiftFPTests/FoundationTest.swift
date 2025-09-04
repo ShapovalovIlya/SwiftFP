@@ -106,6 +106,15 @@ struct FoundationTest {
     }
     
     @Test func lazyApplySequence() async throws {
-        let 
+        let sut = [
+            { $0 },
+            { $0 + 1 },
+            { Issue.record("Should not be called"); return $0 }
+        ]
+            .lazy
+            .apply(1)
+        
+        #expect(sut.first == 1)
+        #expect(sut[1] == 2)
     }
 }
