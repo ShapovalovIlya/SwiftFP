@@ -117,4 +117,10 @@ struct FoundationTest {
         #expect(sut.first == 1)
         #expect(sut[1] == 2)
     }
+    
+    @Test func lazyUniqueSequence() async throws {
+        let sut = [1, 2, 2, 3, 3, 3].lazy.unique()
+        
+        #expect(Array(sut) == [1, 2, 3])
+    }
 }

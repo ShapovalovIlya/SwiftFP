@@ -184,7 +184,3 @@ public extension Sequence where Element: Sendable {
         map { $0(value) }
     }
 }
-
-public extension Sequence where Element: Hashable {
-    @inlinable func uniqued() -> Set<Element> { Set(self) }
-}
