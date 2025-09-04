@@ -162,6 +162,27 @@ public extension Sequence where Element: Sendable {
             try await group.waitForAll()
         }
     }
+    
+    /// Applies a given argument to each function in the sequence and returns an array of the results.
+    ///
+    /// This method invokes each function in the sequence with the provided `value` and collects the results into an array.
+    ///
+    /// - Parameter value: The argument to apply to each function in the sequence.
+    /// - Returns: An array containing the results of applying `value` to each function.
+    ///
+    /// ### Example:
+    /// ```swift
+    /// let functions: [(Int) -> String] = [
+    ///     { "\($0)" },
+    ///     { String($0 * 2) }
+    /// ]
+    /// let results = functions.apply(5)
+    /// // results == ["5", "10"]
+    /// ```
+    @inlinable
+    func apply<A,B>(_ value: A) -> [B] where Element == (A) -> B {
+        map { $0(value) }
+    }
 }
 
 public extension Sequence where Element: Hashable {

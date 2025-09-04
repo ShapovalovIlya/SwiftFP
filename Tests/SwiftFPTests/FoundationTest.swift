@@ -92,4 +92,20 @@ struct FoundationTest {
         // ~= 10 с 369 мс - asyncForEach,
         // ~= 104 мс - concurrentForEach
     }
+    
+    @Test func applySequence() async throws {
+        let sut: [(Int) -> Int] = [
+            { $0 },
+            { $0 + 1 },
+            { $0 + 2 }
+        ]
+        
+        let results = sut.apply(1)
+        
+        #expect(results == [1, 2, 3])
+    }
+    
+    @Test func lazyApplySequence() async throws {
+        let 
+    }
 }
