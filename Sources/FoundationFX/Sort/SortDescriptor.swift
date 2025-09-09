@@ -76,30 +76,3 @@ public extension Sort.Descriptor {
     }
 
 }
-
-//MARK: - Sequence
-
-public extension Sequence {
-    
-    @inlinable
-    func sorted<C: Sort.Comparator>(
-        using comparator: C
-    ) -> [Element] where Self.Element == C.Element {
-        sorted { lhs, rhs in
-            let result = comparator.compare(lhs, rhs)
-            return comparator.sortOrder.satisfy(result)
-        }
-    }
-    
-    @inlinable
-    func sorted<C: Sort.Comparator>(
-        using comparators: [C]
-    ) -> [Element] where Self.Element == C.Element {
-        sorted { lhs, rhs in
-            comparators.first {
-                let result = $0.compare(lhs, rhs)
-                return $0.sortOrder.satisfy(result)
-            } != nil
-        }
-    }
-}
