@@ -83,7 +83,7 @@ public extension Sequence {
     
     @inlinable
     func sorted<C: Sort.Comparator>(
-        by comparator: C
+        using comparator: C
     ) -> [Element] where Self.Element == C.Element {
         sorted { lhs, rhs in
             let result = comparator.compare(lhs, rhs)
