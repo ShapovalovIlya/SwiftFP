@@ -198,10 +198,10 @@ public enum Either<Left, Right> {
     
 }
 
-extension Either where Left == Right {
+public extension Either where Left == Right {
     
     /// Return wrapped value if both branches contains same types.
-    public var fold: Left {
+    var fold: Left {
         switch self {
         case .left(let left): return left
         case .right(let right): return right
@@ -209,7 +209,7 @@ extension Either where Left == Right {
     }
 }
 
-extension Either where Left: Error {
+public extension Either where Left: Error {
     
     /// Transform `Either` into Foundation's `Result` type.
     @inlinable
@@ -221,13 +221,26 @@ extension Either where Left: Error {
     }
 }
 
-extension Either where Right: Error {
+public extension Either where Right: Error {
     /// Transform `Either` into Foundation's `Result` type.
     @inlinable
     func result() -> Result<Left, Right> {
         switch self {
         case .left(let left): return .success(left)
         case .right(let right): return .failure(right)
+        }
+    }
+}
+
+public extension Either where Left: Sequence, Right: Sequence {
+    @inlinable
+    func sequence() -> [Either<Left.Element, Right.Element>] {
+        switch self {
+        case .left(let left):
+            return left.map(Either<Left.Element, Right.Element>.left)
+            
+        case .right(let right):
+            return right.map(Either<Left.Element, Right.Element>.right)
         }
     }
 }
