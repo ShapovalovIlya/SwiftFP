@@ -7,6 +7,8 @@
 
 import Foundation
 
+public typealias BuilderOf<T> = Array<T>.Builder
+
 public extension Set {
     @inlinable
     init(@Array<Element>.Builder _ build: () -> [Element]) {
