@@ -95,4 +95,25 @@ struct ArrayBuilderTests {
         
         #expect(sut == ["baz": 1])
     }
+    
+    @Test func sequenceBuilder() async throws {
+        let sut = Array.build {
+            1
+            2
+        }
+        
+        #expect(sut == [1, 2])
+    }
+    
+    @Test(arguments: [true, false])
+    func sequenceBuilderWithBranch(_ state: Bool) async throws {
+        let sut = Array.build {
+            1
+            if state {
+                2
+            }
+        }
+        
+        #expect(sut.contains(2) == state)
+    }
 }

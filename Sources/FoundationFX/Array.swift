@@ -10,20 +10,33 @@ import Foundation
 public typealias BuilderOf<T> = Array<T>.Builder
 
 public extension Set {
+    @available(*, deprecated, message: "Use Set.build instead")
     @inlinable
     init(@Array<Element>.Builder _ build: () -> [Element]) {
         self = Set(build())
+    }
+    
+    @inlinable
+    static func build(@BuilderOf<Element> _ build: () throws -> [Element]) rethrows -> Self {
+        Set(try build())
     }
 }
 
 public extension Array {
     //MARK: - init(_:)
+    
+    @available(*, deprecated, message: "Use Array.build instead")
     @inlinable
     init(@Builder _ build: () throws -> [Element]) rethrows { self = try build() }
     
     @inlinable
     init<S: AsyncSequence>(_ s: S) async rethrows where S.Element == Element {
         self = try await s.reduce(into: [Element]()) { $0.append($1) }
+    }
+    
+    @inlinable
+    static func build(@Builder _ build: () throws -> [Element]) rethrows -> Self {
+        try build()
     }
     
     //MARK: - Builder
