@@ -245,14 +245,14 @@ public extension Result where Success == Data, Failure == Error {
     }
 }
 
-extension Result where Success: Sendable {
+public extension Result where Success: Sendable {
     /// Returns a new result, mapping any success value using the given asynchronous transformation.
     /// - Parameter transform: A asynchronous closure that takes the success value of this instance.
     /// - Returns: A `Result` instance with the result of evaluating `transform` as the new success value
     /// if this instance represents a success.
     @inlinable
     @Sendable
-    public func asyncMap<NewSuccess>(
+    func asyncMap<NewSuccess>(
         _ transform: @Sendable (Success) async -> NewSuccess
     ) async -> Result<NewSuccess, Failure> {
         switch self {
@@ -270,7 +270,7 @@ extension Result where Success: Sendable {
     /// - Returns: A `Result` instance, either from the closure or the previous `.failure`.
     @inlinable
     @Sendable
-    public func asyncFlatMap<NewSuccess>(
+    func asyncFlatMap<NewSuccess>(
         _ transform: @Sendable (Success) async -> Result<NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         await asyncMap(transform).flatMap(\.self)
@@ -283,11 +283,22 @@ extension Result where Success: Sendable {
     @inlinable
     @Sendable
     @discardableResult
-    public func asyncApply<NewSuccess: Sendable>(
+    func asyncApply<NewSuccess: Sendable>(
         _ functor: Result<@Sendable (Success) async -> NewSuccess, Failure>
     ) async -> Result<NewSuccess, Failure> {
         await functor
             .asyncMap(self.asyncMap)
             .flatMap(\.self)
     }
+    
+    @inlinable
+    func task(priority: TaskPriority? = nil) -> Task<Success, Never> where Failure == Never {
+        Task(priority: priority, operation: self.get)
+    }
+    
+    @inlinable
+    func task(priority: TaskPriority? = nil) -> Task<Success, Error> where Failure: Error {
+        Task(priority: priority, operation: self.get)
+    }
+    
 }
