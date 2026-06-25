@@ -88,7 +88,7 @@ public extension Task where Failure == Never {
     /// - Returns: A task that completes when all input tasks have finished.
     @inlinable
     @discardableResult
-    static func sequcence<S: Sequence>(
+    static func sequence<S: Sequence>(
         _ sequence: S
     ) -> Task<[Success], Failure> where S.Element == Self, S: Sendable {
         Task<[Success], Failure> {

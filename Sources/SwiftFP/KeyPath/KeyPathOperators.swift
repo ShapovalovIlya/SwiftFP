@@ -43,6 +43,12 @@ public func !=<T, U: Equatable>(lhs: KeyPath<T, U>, rhs: U) -> (T) -> Bool {
     { $0[keyPath: lhs] != rhs }
 }
 
+/// Overloading the built-in operator `>`, which allows you to apply it to any `Comparable` key path.
+///
+///    An example of comparing the `keyPath` property in the `.filter(_:)` function:
+///
+///        let highPriced = products.filter(\.price > 100)
+///
 @inlinable
 public func ><T, U: Comparable>(lhs: KeyPath<T, U>, rhs: U) -> (T) -> Bool {
     { $0[keyPath: lhs] > rhs }

@@ -56,6 +56,11 @@ public extension Sequence {
         Dictionary(grouping: self, by: { $0[keyPath: keyPath] })
     }
     
+    /// Creates a dictionary whose keys are the unique values produced by the given closure,
+    /// and whose values are sets of elements that produced each key.
+    ///
+    /// - Parameter elementProvider: A closure that extracts a hashable key from each element.
+    /// - Returns: A set containing the unique keys extracted from all elements.
     @inlinable
     func set<T: Hashable>(
         of elementProvider: (Element) throws -> T

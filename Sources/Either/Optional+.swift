@@ -9,9 +9,10 @@ import Foundation
 
 public extension Optional {
     
-    /// Convert optional value to either.
-    /// - Parameter other: If the wrapped is `nil`, given value will be wrapped in `Either` container.
-    /// - Returns: `Either` container, that hold's wrapped or other value.
+    /// Converts an optional value to an `Either`.
+    ///
+    /// - Parameter other: The value to use when the optional is `nil`.
+    /// - Returns: `.left(wrapped)` if the optional has a value, `.right(other)` if it's `nil`.
     @inlinable func either<Right>(_ other: Right) -> Either<Wrapped, Right> {
         switch self {
         case .some(let wrapped): return .left(wrapped)

@@ -12,11 +12,16 @@ public struct State<Environment, Value> {
     
     @usableFromInline let reducer: Reducer
     
+    /// Creates a state transformer from a reducer closure.
+    /// - Parameter reducer: A closure that takes the current environment and returns a new environment along with a produced value.
     @inlinable
     public init(_ reducer: @escaping (Environment) -> (Environment, Value)) {
         self.reducer = reducer
     }
-    
+
+    /// Runs the state transformer with the given initial environment.
+    /// - Parameter environment: The initial state to thread through the computation.
+    /// - Returns: A tuple containing the final environment and the produced value.
     @inlinable
     public func reduce(
         _ environment: Environment
@@ -56,6 +61,13 @@ public struct State<Environment, Value> {
             .joined()
     }
     
+    /// Transforms the environment required by this state transformer using the provided closure.
+    ///
+    /// Use `pullback` to adapt a `State` that expects a specific environment type
+    /// so it can be used with a different source environment.
+    ///
+    /// - Parameter transform: A closure that converts a value of type `T` into the original `Environment`.
+    /// - Returns: A new `State` that takes the new environment type and produces the same result.
     @inlinable
     public func pullback<T>(
         _ transform: @escaping (T) -> Environment

@@ -96,6 +96,10 @@ public enum Validated<Success, Failure> where Failure: Swift.Error {
         }
     }
     
+    /// Transforms all error values in this `Validated` using the given closure.
+    ///
+    /// - Parameter transform: A closure that takes the array of errors and returns a new array of transformed errors.
+    /// - Returns: A `Validated` with transformed errors if invalid, unchanged if valid.
     @inlinable
     public func mapErrors<NewFailure>(
         _ transform: (NotEmptyArray<Failure>) -> NotEmptyArray<NewFailure>
@@ -216,6 +220,13 @@ public enum Validated<Success, Failure> where Failure: Swift.Error {
             .joined()
     }
     
+    /// Chains this validated with another validated-producing closure on the error side.
+    ///
+    /// If this instance is `.invalid`, the closure is applied to the errors.
+    /// If `.valid`, the value is preserved unchanged.
+    ///
+    /// - Parameter transform: A closure that takes the errors and returns a new `Validated`.
+    /// - Returns: A `Validated` with potentially transformed errors.
     @inlinable
     public func flatMapErrors<NewFailure>(
         _ transform: (NotEmptyArray<Failure>) -> Validated<Success, NewFailure>
@@ -229,6 +240,10 @@ public enum Validated<Success, Failure> where Failure: Swift.Error {
         }
     }
     
+    /// Asynchronously chains this validated with another validated-producing closure on the error side.
+    ///
+    /// - Parameter transform: An async closure that takes the errors and returns a new `Validated`.
+    /// - Returns: A `Validated` with potentially transformed errors.
     @inlinable
     public func asyncFlatMapErrors<NewFailure>(
         _ transform: (NotEmptyArray<Failure>) async -> Validated<Success, NewFailure>
@@ -319,6 +334,17 @@ extension Validated: Sendable where Success: Sendable, Failure: Sendable {}
 extension Validated: Hashable where Success: Hashable, Failure: Hashable {}
 
 public extension Validated {
+    /// A result builder for declarative validation DSL.
+    ///
+    /// Build an array of validator closures that each take a `Success` value and return
+    /// a `Result<Success, Failure>`. Use with `Validated(state:)` to accumulate all errors.
+    ///
+    /// ```swift
+    /// let result = Validated(user) {
+    ///     { $0.name.isEmpty ? .failure(.emptyName) : .success($0) }
+    ///     { $0.age < 0 ? .failure(.invalidAge) : .success($0) }
+    /// }
+    /// ```
     @resultBuilder
     enum Validator {
         public typealias ValidationResult = Result<Success, Failure>

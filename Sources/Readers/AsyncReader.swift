@@ -84,9 +84,12 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable, Result: Send
         }
     }
     
-    /// <#Description#>
+    /// Chains this async reader with another reader-producing closure, flattening the result.
     ///
-    ///```swift
+    /// Use `flatMap` to sequence async reader computations where each step depends on the previous result
+    /// and shares the same environment.
+    ///
+    /// ```swift
     /// let isEvenChecker = AsyncReader<Int, String>(\.description)
     ///     .flatMap { description in
     ///         AsyncReader<Int, String> { io in
@@ -96,12 +99,12 @@ public struct AsyncReader<IO, Result>: Sendable where IO: Sendable, Result: Send
     ///         }
     ///     }
     ///
-    /// isEvenChecker.apply(1) // output "1 is even: false"
-    /// isEvenChecker.apply(2) // output "2 is even: true"
-    ///```
+    /// await isEvenChecker.apply(1) // "1 is even: false"
+    /// await isEvenChecker.apply(2) // "2 is even: true"
+    /// ```
     ///
-    /// - Parameter task: <#task description#>
-    /// - Returns: <#description#>
+    /// - Parameter task: A closure that takes the result of this reader and returns a new `AsyncReader`.
+    /// - Returns: A flattened `AsyncReader` representing the chained computation.
     @inlinable
     public func flatMap<NewResult>(
         _ task: @escaping @Sendable (Result) async -> AsyncReader<IO, NewResult>

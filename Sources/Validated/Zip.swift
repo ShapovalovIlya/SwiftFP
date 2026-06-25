@@ -7,6 +7,10 @@
 
 import Foundation
 
+/// Zips two `Validated` instances into a single `Validated` containing a tuple.
+///
+/// If both are `.valid`, returns `.valid((lhs, rhs))`. If either is `.invalid`,
+/// all errors are accumulated.
 @inlinable
 public func zip<A,B,E>(
     _ lhs: Validated<A, E>,
@@ -15,6 +19,7 @@ public func zip<A,B,E>(
     lhs.zip(rhs)
 }
 
+/// Zips two `Validated` instances and combines their results using a transform closure.
 @inlinable
 public func zip<A,B,C,E>(
     _ lhs: Validated<A, E>,
@@ -24,6 +29,7 @@ public func zip<A,B,C,E>(
     lhs.zip(rhs, using: transform)
 }
 
+/// Zips three `Validated` instances into a single `Validated` containing a tuple of three values.
 @inlinable
 public func zip<A,B,C,E>(
     _ a: Validated<A, E>,
@@ -33,6 +39,7 @@ public func zip<A,B,C,E>(
     zip(a, b).zip(c) { ($0.0, $0.1, $1) }
 }
 
+/// Zips three `Validated` instances and combines their results using a transform closure.
 @inlinable
 public func zip<A,B,C,D,E>(
     _ a: Validated<A, E>,

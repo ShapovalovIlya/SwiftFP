@@ -115,6 +115,9 @@ public extension Result {
         }
     }
     
+    /// Converts this `Result` into an `Either`.
+    ///
+    /// - Returns: `.left(success)` if this result is a success, `.right(failure)` if it's a failure.
     @inlinable
     func either() -> Either<Success, Failure> {
         switch self {

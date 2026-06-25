@@ -145,8 +145,12 @@ public extension Optional {
 }
 
 extension Optional {
+    /// Internal error used to force `nil` to throw in `unwrap()`.
     struct Termination: Error {}
-    
+
+    /// Force-unwraps this optional, throwing `Termination` if `nil`.
+    ///
+    /// Used internally by `Optional.zip` to unwrap multiple optionals in a `do-catch`.
     @usableFromInline
     func unwrap() throws -> Wrapped {
         guard let self else {

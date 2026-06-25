@@ -14,6 +14,19 @@ extension Array {
     }
 }
 
+/// An array guaranteed to contain at least one element.
+///
+/// `NotEmptyArray` ensures non-empty collections at compile time by storing a `head` element
+/// and a `tail` array. This is useful for APIs that require at least one element, such as
+/// validation error accumulators or zipper structures.
+///
+/// ### Example
+///
+/// ```swift
+/// let list = NotEmptyArray<Int>(head: 1, tail: [2, 3])
+/// let doubled = list.map { $0 * 2 }  // NotEmptyArray([2, 4, 6])
+/// let combined = list + NotEmptyArray(single: 4)  // NotEmptyArray([1, 2, 3, 4])
+/// ```
 public struct NotEmptyArray<Element> {
     //MARK: - Properties
     public private(set) var head: Element
