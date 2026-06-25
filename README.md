@@ -1,89 +1,197 @@
-#  SwiftFP
+# SwiftFP
 
-## Foundation:
+Functional programming primitives for Swift.
 
+## Requirements
 
+- Swift 6.4+
+- iOS 13+ / macOS 10.15+
 
-## Reader:
-
-`Reader` is a lightweight functional abstraction for dependency injection and environment-based computations in Swift. 
-It lets you compose and chain logic that depends on a shared, read-only context, making your code more modular, testable, and expressive. 
-Use ‎`Reader` to build pipelines where configuration, dependencies, or context are injected seamlessly—ideal for scalable and maintainable applications.
+## Installation
 
 ```swift
-// Define an environment type
+// Swift Package Manager
+.package(url: "https://github.com/ShapovalovIlya/SwiftFP.git", from: "1.0.0")
+```
+
+Each module can be imported independently, or use the aggregate `SwiftFP` target to get everything:
+
+```swift
+import Either
+import Monad
+import Validated
+// ... or simply:
+import SwiftFP
+```
+
+## Modules
+
+### Either
+
+A disjoint union representing a value of one of two possible types — commonly used for error handling and branching logic.
+
+```swift
+let success: Either<Int, String> = .left(42)
+let failure: Either<Int, String> = .right("Error message")
+
+let result = success.map { $0 * 2 }        // .left(84)
+let chained = success.flatMap { .left($0 + 10) }  // .left(52)
+```
+
+### Monad
+
+A generic value wrapper that provides `map`, `flatMap`, `apply`, and `zip` for functional composition. Supports `@dynamicMemberLookup` for direct property access.
+
+```swift
+let value = Monad(42)
+let doubled = value.map { $0 * 2 }          // Monad(84)
+let chained = value.flatMap { Monad($0 + 10) }  // Monad(52)
+
+@dynamicMemberLookup usage:
+let person = Monad(Person(name: "John", age: 30))
+let name = person.name  // "John"
+```
+
+### NotEmptyArray
+
+An array guaranteed to contain at least one element (`head` + `tail`), ensuring non-empty collections at compile time.
+
+```swift
+let list = NotEmptyArray<Int>(head: 1, tail: [2, 3])
+let doubled = list.map { $0 * 2 }           // NotEmptyArray([2, 4, 6])
+let combined = list + NotEmptyArray(single: 4)  // NotEmptyArray([1, 2, 3, 4])
+```
+
+### Validated
+
+Accumulates multiple validation errors instead of short-circuiting on the first failure. Uses `NotEmptyArray` to store errors.
+
+```swift
+let validated: Validated<Int, MyError> = .valid(42)
+let result = validated.map { $0 * 2 }       // .valid(84)
+
+// Multiple errors are collected, not short-circuited:
+let combined = validated1.zip(validated2)   // errors from both sides merged
+```
+
+Includes a `@resultBuilder` (`Validator`) for DSL-style validation:
+
+```swift
+let result = Validated(user) {
+    { $0.name.isEmpty ? .failure(.emptyName) : .success($0) }
+    { $0.age < 0 ? .failure(.invalidAge) : .success($0) }
+}
+```
+
+### Reader
+
+A functional abstraction for dependency injection. Represents a computation that reads from a shared, read-only environment.
+
+```swift
 struct AppConfig {
     let apiEndpoint: String
     let isDebug: Bool
 }
 
-// Create a Reader that extracts the API endpoint from the environment
-let apiEndpointReader = Reader<AppConfig, String> { config in
-    config.apiEndpoint
+let endpointReader = Reader<AppConfig, String> { $0.apiEndpoint }
+let debugReader = Reader<AppConfig, String> { $0.isDebug ? "ON" : "OFF" }
+
+let summary = endpointReader.zip(debugReader) { ep, dbg in
+    "Endpoint: \(ep), Debug: \(dbg)"
 }
 
-// Create a Reader that formats a debug message based on the environment
-let debugMessageReader = Reader<AppConfig, String> { config in
-    config.isDebug ? "Debug mode is ON" : "Debug mode is OFF"
-}
-
-// Combine Readers to produce a summary
-let summaryReader = apiEndpointReader.zip(debugMessageReader) { endpoint, debugMsg in
-    "Endpoint: \(endpoint)\n\(debugMsg)"
-}
-
-// Use the Reader with a specific environment
 let config = AppConfig(apiEndpoint: "https://api.example.com", isDebug: true)
-let summary = summaryReader.apply(config)
-
-print(summary)
-// Output:
-// Endpoint: https://api.example.com
-// Debug mode is ON
+summary.apply(config)  // "Endpoint: https://api.example.com, Debug: ON"
 ```
 
-## Either:
+`AsyncReader` provides the same pattern for async/Sendable contexts.
 
-‎`Either` is a flexible enum type for representing a value that can be one of two possible types—commonly used for error handling, 
-branching logic, or modeling data with multiple valid forms. 
+### Effect
 
-## Zipper:
-
-‎`Zipper` is a data structure for navigating and editing collections with a movable cursor. 
-It lets you efficiently focus on, update, and traverse elements while retaining access to the context before and after the current position.
-Perfect for editors, undo/redo stacks, and more.
+A deferred computation monad (similar to an IO monad). The wrapped closure executes only when `run()` is called.
 
 ```swift
-// Create a zipper focused on "b"
-let zipper = Zipper(previous: ["a"], current: "b", next: ["c", "d"])
-print(zipper.current)         // "b"
-print(Array(zipper.previous)) // ["a"]
-print(Array(zipper.next))     // ["c", "d"]
+let hello = Effect.pure("Hello, Effect!")
+let excited = hello.map { $0 + " 🎉" }
+let greet = excited.flatMap { msg in
+    Effect { msg.uppercased() }
+}
 
-// Move the cursor forward
+greet.run()  // "HELLO, EFFECT! 🎉"
+```
+
+### State
+
+A state transformer monad that threads state through computations, returning both a new state and a value.
+
+```swift
+let increment: State<Int, Int> = State { state in (state + 1, state + 1) }
+let result = increment.reduce(0)  // (environment: 1, value: 1)
+```
+
+### Future
+
+A lazy async monad wrapping `@Sendable () async -> Value`. Runs when `run()` is awaited. Supports parallel execution via `zip`.
+
+```swift
+let future = Future {
+    try? await Task.sleep(for: .seconds(1))
+    return 42
+}
+
+let result = await future.run()  // 42
+
+// Parallel execution:
+let combined = future1.zip(future2)  // both run concurrently
+```
+
+### Zipper
+
+A cursor-based data structure for navigating and editing collections with `previous`/`current`/`next` slices.
+
+```swift
+let zipper = Zipper(previous: ["a"], current: "b", next: ["c", "d"])
 var mutable = zipper
 mutable.forward()
-print(mutable.current)        // "c"
+mutable.current  // "c"
 ```
 
-## Effect:
+### FoundationFX
 
-`Effect` is a functional abstraction for deferred computations. Inspired by the IO monad, 
-Effect lets you wrap, compose, and sequence side-effecting or asynchronous operations in a predictable and testable way. 
-Use Effect to organize your effects, improve code clarity, and enable powerful functional patterns in your Swift projects.
+Extensions on Swift Foundation types:
+
+- **Sequence**: `asyncMap`, `concurrentMap`, `concurrentForEach`, `asyncAdapter`, `grouped(by:)`, `sorted(by:)`
+- **Result**: `tryMap`, `asyncMap`, `asyncFlatMap`, `apply`, `zip`, `sequence`, `decodeJSON`
+- **Optional**: `apply`, `zip`, `filter`, `replaceNil`, `orZero`, `orEmpty`, `orFalse`, `asyncMap`, `asyncFlatMap`
+- **Task**: `map`, `flatMap`, `zip`, `sequence`, `allSettled`
+- **LazySequence**: `apply`, `unique`
 
 ```swift
-// Create an effect that returns a value
-let helloEffect = Effect.pure("Hello, Effect!")
+// Concurrent async mapping with order preservation:
+let urls = [url1, url2, url3]
+let data = try await urls.asyncMap { try await fetch($0) }
 
-// Transform the value using map
-let excitedEffect = helloEffect.map { $0 + " 🎉" }
+// Result zipping:
+let a: Result<Int, Error> = .success(1)
+let b: Result<String, Error> = .success("hello")
+let combined = a.zip(b)  // .success((1, "hello"))
 
-// Chain effects using flatMap
-let greetEffect = excitedEffect.flatMap { message in
-    Effect { message.uppercased() }
-}
-
-// Run the effect to get the result
-print(greetEffect.run()) // Prints "HELLO, EFFECT! 🎉"
+// Optional utilities:
+let value: Int? = nil
+value.orZero      // 0
+value.orEmpty     // [] (for array types)
 ```
+
+### SwiftFP Utilities
+
+- **`compose` / `tryCompose`** — Function composition (2–4 functions)
+- **`>>>`** — Pipeline operator: `{ f } >>> { g }` produces `{ g(f($0)) }`
+- **`ObjectFactory<T>`** — Builder pattern via `@dynamicMemberLookup` for value types
+- **`RefObjectFactory<T>`** — Same for reference types (`AnyObject`)
+- **KeyPath operators** — `!`, `==`, `!=`, `>` on KeyPaths produce `(T) -> Bool` predicates:
+
+```swift
+let unread = articles.filter(!\.isRead)
+let fullLength = articles.filter(\.category == .fullLength)
+```
+
