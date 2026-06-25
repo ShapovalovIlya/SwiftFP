@@ -13,7 +13,7 @@ struct FoundationTest {
     @Test func initArrayWithAsyncSequence() async throws {
         let sequence = AsyncStream<Int> { c in
             Task {
-                try await Task.sleep(for: .milliseconds(100))
+                try? await Task.sleep(for: .milliseconds(100))
                 c.yield(1)
                 c.finish()
             }
@@ -26,7 +26,7 @@ struct FoundationTest {
     @Test func initDictionaryWithAsyncSequence() async throws {
         let sequence = AsyncStream<(Int, String)> { c in
             Task {
-                try await Task.sleep(for: .milliseconds(100))
+                try? await Task.sleep(for: .milliseconds(100))
                 c.yield((1, 1.description))
                 c.finish()
             }
