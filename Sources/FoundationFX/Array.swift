@@ -34,7 +34,7 @@ public extension Set {
     /// - Parameter build: A `@Builder` closure that produces an array of elements.
     /// - Returns: A set containing all elements produced by the builder.
     @inlinable
-    static func build(@BuilderOf<Element> _ build: () throws -> [Element]) rethrows -> Self {
+    static func build<E: Error>(@BuilderOf<Element> _ build: () throws(E) -> [Element]) rethrows -> Self {
         Set(try build())
     }
 }
@@ -73,7 +73,7 @@ public extension Array {
     /// - Parameter build: A `@Builder` closure that produces an array of elements.
     /// - Returns: An array containing all elements produced by the builder.
     @inlinable
-    static func build(@Builder _ build: () throws -> [Element]) rethrows -> Self {
+    static func build<E:Error>(@Builder _ build: () throws(E) -> [Element]) rethrows -> Self {
         try build()
     }
 
